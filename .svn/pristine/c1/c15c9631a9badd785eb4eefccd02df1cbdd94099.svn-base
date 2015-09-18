@@ -1,0 +1,92 @@
+{% extends '::base.html.twig' %}
+
+{% block title %}Mensajes Privados{% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets '@CMFrontendBundle/Resources/public/css/private_message.css' %}
+    	<link rel="stylesheet" href="{{ asset_url }}">
+    {% endstylesheets %}
+    {% stylesheets '@tagit_css' %}
+    	<link rel="stylesheet" href="{{ asset_url }}">
+    {% endstylesheets %}
+    
+{% endblock %}
+
+ {% set panel_type = "Mensajes Privados" %}
+ {% set panel_title = (app.session.get('filter').getFanPageName()) %}
+{% block panelbody %}
+	<div class="row cm-row">
+		<div class="col-md-12 col-lg-12 conversations-scroll">
+			<div class="list-group conversations-container">
+				{{ render(controller('CMFrontendBundle:PrivateMessage:conversations')) }}
+				<button class="btn btn-default btn-more col-md-offset-5">Ver mas</button>
+			</div>
+		</div>
+			</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="messages-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg">
+	    <div class="modal-content">
+	      <div class="modal-body cm-row row">
+      		<div class="col-md-9 col-lg-9 col-messages-container">
+      			<div class="messages-title panel-heading ">
+      			<row>
+      				<h4>Calificar:</h4>
+      				<div class="botones"> 
+      				<div class="circle circle-green-unselected  btn-qualify-popup col-xs-1" data-calificacion=2></div>
+					<div class="circle circle-blue-unselected  btn-qualify-popup col-xs-1" data-calificacion=1></div>
+					<div class="circle circle-red-unselected  btn-qualify-popup col-xs-1" data-calificacion=3></div>
+					</div>
+					</row>
+				</div>
+	      		<div class="col-scroll">
+					<div class="messages-container">
+						{{ render(controller('CMFrontendBundle:PrivateMessage:messages')) }}
+					</div>
+					<div class="panel panel-default panel-post">
+						<div class="panel-heading"><img class="fb-pic" src="http://graph.facebook.com/{{fanPage.fbId}}/picture?type=square&height=32"/>{{ fanPage.name }}</div>
+						<div class="panel-body">
+							<textarea class="form-control" rows="5"></textarea>
+							<button class="btn btn-primary btn-message pull-right">Enviar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-3 col-lg-3">
+				<div class="panel panel-default panel-tags">
+					<div class="panel-heading">Tags <span class="glyphicon glyphicon-tags"></span><span class="tag-label-response label label-success pull-right" style="display:none"></span></div>
+					<div class="panel-body">
+						<ul id="tags">
+						</ul>
+						<input class="tags-input" type="hidden" style="display:none;" value="" name="tags">
+					</div>
+				</div>
+			</div>
+
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/private_message.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@jquery_ui' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@tagit_js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/filtros.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+	{% endjavascripts %}
+	{% javascripts '@CMFrontendBundle/Resources/public/js/typeahead.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+	{% endjavascripts %}    
+	
+{% endblock %}

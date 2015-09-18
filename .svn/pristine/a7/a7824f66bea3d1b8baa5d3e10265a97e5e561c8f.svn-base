@@ -1,0 +1,36 @@
+@CHARSET "UTF-8";
+
+.input-group {
+	margin: 5px;
+	padding: 5px;	
+}
+
+.form-inline {
+	margin: 5px;
+	padding: 5px;
+}
+
+select {
+	width: 100%;
+	height: 75% !important;
+}
+
+.deshabilitado {
+	/*  cursor: default;*/
+}
+
+.alertaVisible {
+	color: red	
+}
+
+.alertaNoVisible {
+	color: white	
+}
+.fanpagesCapa {
+	height: 150px;
+}
+
+.calificacionesCapa {
+	height: 100px;
+}
+

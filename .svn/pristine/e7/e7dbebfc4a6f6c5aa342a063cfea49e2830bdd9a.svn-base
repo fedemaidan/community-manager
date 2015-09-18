@@ -1,0 +1,303 @@
+<?php
+
+namespace CM\Bundle\APIBundle\Command;
+
+
+use Doctrine\ORM\EntityManager;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use CM\Bundle\ModelBundle\Entity\FacebookAPIState;
+use CM\Bundle\ModelBundle\Entity\Conversation;
+use CM\Bundle\ModelBundle\Entity\MessageCache;
+
+class CMConversationCommand extends CMAbstractCommand {
+
+    protected function configure()
+    {
+        parent::configure();
+        $this
+            ->setName('cm-api:pm')
+            ->setDescription('It retrieves and stores the fan page private messages')
+            ->addArgument('page', InputArgument::REQUIRED, "The Facebook Fan Page FB ID")
+        ;
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        parent::execute($input, $output);
+
+        $output->writeln(date('Y-m-d H:i:s')." - Fan Page: ".$this->getFanPage()->getName());
+
+        $this->processConversations();
+
+        $output->writeln(date('Y-m-d H:i:s')." - FIN.");
+
+    }
+
+    /**
+     * This process the conversations
+     */
+    private function processConversations() {
+
+        //Check the last API state
+        $fb_api_state = $this->getFacebookAPIState(FacebookAPIState::CONVERSATIONS_NODE, NULL);
+        $since = $newest_since = $until = $__paging_token= '';
+
+        if($fb_api_state) {
+            $since = $fb_api_state->getSince();
+           $newest_since = $fb_api_state->getNewestSince();
+           $until = $fb_api_state->getUntil();
+            $__paging_token= $fb_api_state->getPagingToken();
+        }
+
+        
+        $i = 0;
+        // Iterate the fb conversations
+        while($fb_conversations = $this->performRequest($this->getFanPage()->getFbId(), 'conversations', array('since' => $since, 'until' => $until, '__paging_token' => $__paging_token))) {
+        	
+            foreach ($fb_conversations['data'] as $fb_conversation) {
+
+                $conversation = $this->saveConversation($fb_conversation);
+                $this->processMessages($conversation);
+                $i++;
+                $this->output->writeln(date('Y-m-d H:i:s')." - \t\t\t acumulacion de conversaciones guardadas ".$i);
+            }
+
+            if($newest_since == '') {
+                $parsed_url = parse_url($fb_conversations['paging']->previous);
+                parse_str($parsed_url['query'], $url_params);
+                $newest_since = $url_params['since'];
+                $__paging_token = isset($url_params['__paging_token']) ? $url_params['__paging_token'] : '';
+            }
+            $parsed_url = parse_url($fb_conversations['paging']->next);
+            parse_str($parsed_url['query'], $url_params);
+            $until = $url_params['until'];
+            $__paging_token = isset($url_params['__paging_token']) ? $url_params['__paging_token'] : '';
+
+            $this->updateFacebookAPIState(FacebookAPIState::CONVERSATIONS_NODE, NULL, $since, $newest_since, $until,$__paging_token);
+            $this->getManager()->flush();
+            $this->getManager()->clear();
+            $this->fanPage = null;
+            	
+            
+        }
+
+        // Reset flags for next run
+        $since = $newest_since;
+        $newest_since = '';
+        $until = '';
+        $this->updateFacebookAPIState(FacebookAPIState::CONVERSATIONS_NODE, NULL, $since, $newest_since, $until, $__paging_token);
+        $this->getManager()->flush();
+        $this->getManager()->clear();
+        $this->fanPage = null;
+        // ------------------------
+
+    }
+
+    /**
+     * This process the messages
+     */
+    private function processMessages($conversation) {
+        //Check the last API state
+        $fb_api_state = $this->getFacebookAPIState(FacebookAPIState::MESSAGES_NODE, $conversation->getConversationId());
+        $since = $newest_since = $until = $__paging_token = '';
+        if($fb_api_state) {
+            $since = $fb_api_state->getSince();
+            $newest_since = $fb_api_state->getNewestSince();
+            $until = $fb_api_state->getUntil();
+            $__paging_token = $fb_api_state->getPagingToken();
+        }
+
+        if ($conversation->getConversationId() != 't_mid.1393602242240:223246962c1e86e901') { // problemas que no resolvimos con dicho conv
+        	
+        // Iterate the fb conversation's messages
+        while($conversation_messages = $this->performRequest($conversation->getConversationId(), 'messages', array('since' => $since, 'until' => $until, '__paging_token' => $__paging_token))) 
+        {
+        	
+            $stored_messages = $conversation->getMessages() ? $conversation->getMessages() : array();
+            $this->output->writeln("Guardare mensajes de la conversacion -------> ". $conversation->getConversationId());
+            if($since != '') {
+		 		$this->output->writeln("Since cargado");
+            		if (isset($conversation_messages['data'][0])) {
+						$this->output->writeln("data cargado");
+                		$this->saveMessageCache($conversation, $conversation_messages['data']);
+            		}
+                //$conversation->setMessages(array_merge($conversation_messages['data'], $stored_messages));
+            } else {
+            	if (isset($conversation_messages['data'][0])) {
+  					$conversation->setMessages(array_merge($stored_messages,$conversation_messages['data']));
+            	}
+            	else 
+            		$this->output->writeln("conversacion sin mensaje");
+            }
+
+            $this->getManager()->flush();
+            $this->output->writeln(date('Y-m-d H:i:s')." - \t\t\t Set Mensajes");
+            if($newest_since == '') {
+            	if ($conversation_messages['paging']) {
+                $parsed_url = parse_url($conversation_messages['paging']->previous);
+                parse_str($parsed_url['query'], $url_params);
+                $newest_since = $url_params['since'];
+        		$__paging_token = isset($url_params['__paging_token']) ? $url_params['__paging_token'] : '';
+            	}
+            }
+            
+            if ($conversation_messages['paging']) {
+            	$parsed_url = parse_url($conversation_messages['paging']->next);
+            	parse_str($parsed_url['query'], $url_params);
+            	$until = $url_params['until'];
+            	$__paging_token = isset($url_params['__paging_token']) ? $url_params['__paging_token'] : '';
+            }
+            
+            $this->updateFacebookAPIState(FacebookAPIState::MESSAGES_NODE, $conversation->getConversationId(), $since, $newest_since, $until,$__paging_token);
+            $this->getManager()->flush();
+            
+        }
+        // Reset for next run
+        $since = $newest_since;
+        $newest_since = '';
+        $until = '';
+        $__paging_token = '';
+        $stored_messages = $conversation->getMessages() ? $conversation->getMessages() : array();
+        $messageCache = $this->getMessageCache($conversation);
+        $stored_messages_cache = $messageCache->getMessages() ? $messageCache->getMessages() : array();
+        $conversation->setMessages(array_merge($stored_messages_cache, $stored_messages));
+        $this->getManager()->remove($messageCache);
+        $this->updateFacebookAPIState(FacebookAPIState::MESSAGES_NODE, $conversation->getConversationId(), $since, $newest_since, $until,$__paging_token);
+        $this->getManager()->flush();
+        // --------------------
+        }
+
+    }
+
+    /**
+     * This create/update the conversation in the DB
+     */
+    private function saveConversation($fb_conversation) {
+        $conversation = $this->getManager()->getRepository('CMModelBundle:Conversation')->findOneBy(array('conversation_id' => $fb_conversation->id));
+        /* @var $conversation Conversation */
+        if (!$conversation) {
+            $conversation = new Conversation();
+            $conversation->setFanPage($this->getFanPage());
+        }
+
+        $conversation->setConversationId($fb_conversation->id);
+        $conversation->setUpdatedTime($fb_conversation->updated_time);
+        $participants = array();
+        foreach ($fb_conversation->participants->data as $participant) {
+            $fanpage_fb_id = $this->getFanPage()->getFbId();
+            $fb_id = $participant->id;
+            if($fanpage_fb_id != $fb_id) {
+                $participants[] = $participant->id;
+            }
+        }
+        $conversation->setParticipants(implode(',', $participants));
+        $snippet = isset($fb_conversation->snippet) ? $fb_conversation->snippet : '';
+        $conversation->setSnippet($snippet);
+
+        if($conversation->getId() == null) {
+            $this->output->writeln(date('Y-m-d H:i:s')." - \t\t\t Nueva Conversacion");
+            $this->getManager()->persist($conversation);
+        }
+        else {
+        	$this->output->writeln(date('Y-m-d H:i:s')." - \t\t\t Actualizo Conversacion");
+        }
+        
+        $this->getManager()->flush();
+
+        
+        return $conversation;
+    }
+
+    /**
+     * This returns the facebook api state for the given parameters
+     *
+     * @param $node_type The facebook api node (conversations, messages, etc)
+     * @param $conversation_id The facebook api conversation_id
+     * @return FacebookAPIState
+     */
+    private function getFacebookAPIState($node_type, $conversation_id = null) {
+
+        $facebookAPIState = $this->getManager()->getRepository('CMModelBundle:FacebookAPIState')->findOneBy(array('page' => $this->getFanPage()->getName(), 'node_type' => $node_type, 'conversation_id' => $conversation_id));
+        /* @var $twitterAPIState TwitterAPIState */
+        if (!$facebookAPIState) {
+            return false;
+        }
+        return $facebookAPIState;
+    }
+
+    /**
+     * This updates the fb api state for the given parameters.
+     *
+     * @param $node_type The facebook api node_type
+     * @param $conversation_id The facebook api conversation_id
+     * @param $since The facebook api since info
+     * @param $newest_since The facebook api newest_since info
+     * @param $until The facebook api until info
+     */
+    private function updateFacebookAPIState($node_type, $conversation_id, $since, $newest_since, $until, $__paging_token) {
+//         if ($this->dry) {
+//             return false;
+//         }
+        $facebookAPIState = $this->getManager()->getRepository('CMModelBundle:FacebookAPIState')->findOneBy(array('page' => $this->getFanPage()->getName(), 'node_type' => $node_type, 'conversation_id' => $conversation_id));
+
+        if (!$facebookAPIState) {
+            $facebookAPIState = new FacebookAPIState();
+        }
+
+        $facebookAPIState->setPage($this->getFanPage()->getName());
+        $facebookAPIState->setNodeType($node_type);
+        $facebookAPIState->setConversationId($conversation_id);
+        $facebookAPIState->setSince($since);
+        $facebookAPIState->setNewestSince($newest_since);
+        $facebookAPIState->setUntil($until);
+        $facebookAPIState->setPagingToken($__paging_token);
+        if($facebookAPIState->getId() == null) {
+            $this->getManager()->persist($facebookAPIState);
+        }
+        $this->getManager()->flush();
+    }
+
+    /**
+     * This saves the conversation message in a cache table before we save it in the conversation table
+     * @param  [type] $conversation [description]
+     * @param  [type] $messages     [description]
+     * @return [type]               [description]
+     */
+    private function saveMessageCache($conversation, $messages) {
+//     	$this->output->writeln("CONVERSACION ENTRO A SAVE MESSAGE CACHE");
+        $messageCache = $this->getMessageCache($conversation);
+//         $this->output->writeln("OBTUVO MESSAGE CACHE");
+        $stored_messages = $messageCache->getMessages() ? $messageCache->getMessages() : array();
+//         $this->output->writeln("OBTUVO STORED MESSAGES");
+        $messageCache->setMessages(array_merge($messages, $stored_messages));
+//         $this->output->writeln("SET MESSAGES");
+        $messageCache->setConversationId($conversation->getId());
+        //$this->output->writeln("SET CONVERSATION ID");
+        if($messageCache->getId() == null) {
+//         	$this->output->writeln("NUEVA");
+            $this->getManager()->persist($messageCache);
+        }
+//         $this->output->writeln("FLUSH");
+         $this->getManager()->flush();
+    }
+
+    /**
+     * This returns/create the message cache
+     * @param  [type] $conversation [description]
+     * @return [type]               [description]
+     */
+    private function getMessageCache($conversation) {
+        $messageCache = $this->getManager()->getRepository('CMModelBundle:MessageCache')->findOneBy(array('conversation_id' => $conversation->getId()));
+
+        if(!$messageCache) {
+            $messageCache = new MessageCache();
+        }
+
+        return $messageCache;
+    }
+
+}

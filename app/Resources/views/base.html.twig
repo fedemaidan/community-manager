@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
+        {% stylesheets '../app/Resources/public/css/*' %}
+            <link rel="stylesheet" type="text/css" charset="UTF-8" media="all" href="{{ asset_url }}"/>
+        {% endstylesheets %}
+        {% stylesheets '@CMFrontendBundle/Resources/public/fonts/*' %}
+    	<link rel="stylesheet" href="{{ asset_url }}">
+    {% endstylesheets %}
+        {% block stylesheets %}{% endblock %}
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    </head>
+    <body>
+        {% include '::flashMessages.html.twig' %}
+        {% block body %}
+            <div class="container-fluid barraSuperior">
+                <nav class="navbar navbar-default barraTransparente" role="navigation">
+                  <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+					
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse collapseSuperior" id="bs-example-navbar-collapse-1">
+                      <ul class="nav navbar-nav navbar-left">
+                      		<li class="pro">	<B>PRO</B>MI</li>
+                      		<li><a href="{{ path('dashboard') }}" {% if panel_type == "Dashboard" %} class="linkPanelSeleccionado" {% endif %}>Dashboard</a></li>
+							{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ADMIN_PAGE') %}<li><a href="{{ path('private_message') }}" {% if panel_type == "Mensajes Privados" %} class="linkPanelSeleccionado" {% endif %}>Mensajes privados</a></li>{% endif %}
+							{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ADMIN_PAGE') or is_granted('ROLE_MODEARATOR') %}<li><a href="{{ path('index_posts') }}" {% if panel_type == "Posts" %} class="linkPanelSeleccionado" {% endif %}>Posts</a></li>{% endif %}
+							{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_ADMIN_PAGE') or is_granted('ROLE_MODEARATOR') %}<li><a href="{{ path('index_comments') }}"{% if panel_type == "Comments" %} class="linkPanelSeleccionado" {% endif %}>Comentarios</a></li>{% endif %}
+							{% if is_granted('ROLE_ADMIN') or is_granted('ROLE_AUDIENCE_GENERA') %}<li><a href="{{ path('audiencias') }}" {% if panel_type == "Audiencias" %} class="linkPanelSeleccionado" {% endif %}>Audiencias</a></li>{% endif %}
+                      </ul>
+
+                      <ul class="nav navbar-nav navbar-right">
+                      	{% if is_granted('ROLE_ADMIN')%}<li class="dropdown">
+          					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Configuracion <span class="caret"></span></a>
+          					<ul class="dropdown-menu" role="menu">
+          						<li><a href="{{ path('abmUsuarios') }}">Usuarios</a></li>
+            					<li><a href="{{ path('abmFanPage') }}">Cuentas de Fanpages</a></li>
+{#             					<li><a href="{{ path('abmGmail') }}">Cuentas de GMAIL</a></li>#}
+          					</ul>
+				        </li>{% endif %}
+                        <li><a href="{{ path('logout') }}">Salir</a></li>
+                        <ul></ul>
+                      </ul>
+                    </div><!-- /.navbar-collapse -->
+                  </div><!-- /.container-fluid -->
+                </nav>
+            </div>
+            
+            {% block panel %}
+            {% if panel_type == "Mensajes Privados" or panel_type == "Comments" or panel_type == "Posts"  %}
+                <div class="container-fluid ">
+                <div class="navbar-header headerFiltros">
+	 				<a class="navbar-brand" disabled="disabled">Filtrar por</a>
+	 			</div>
+    			<div class="collapse navbar-collapse filtros" >
+				 <ul class="nav navbar-nav contieneFiltros">
+					 
+	 					       {% if panel_type == "Mensajes Privados" %}
+                                	{% include "formMensajesPrivados.html.twig" %}
+                                {% endif %}
+                                {% if panel_type == "Posts" %}
+                                	{% include "formPosts.html.twig" %}
+                                {% endif %}
+                                {% if panel_type == "Comments" %}
+                                	{% include "formComentarios.html.twig" %}
+                                {% endif %}		
+	 			</ul>
+	 			</div>
+                                
+                                <span class="general-label-response label label-success pull-right" style="display:none"></span>
+                
+                {% endif %}
+                    <div class="panel panel-default panel-base">
+                        <div class="loading"></div>
+                        <div class="panel-heading row ">
+                          {% image '../app/Resources/public/images/fb-icon.png' %}
+                            <img class="fb-icon" src="{{ asset_url }}"/>
+                          {% endimage %}
+                          	  {{ panel_title|default('') }}
+						</div>
+                        <div class="panel-body panel-body-outer">
+                        {% block panelbody %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endblock %}
+        <script src="{{ asset('js/jquery.js') }}"></script>
+        <script src="{{ asset('js/bootstrap.js') }}"></script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

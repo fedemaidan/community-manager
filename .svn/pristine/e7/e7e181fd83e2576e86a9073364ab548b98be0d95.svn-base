@@ -1,0 +1,427 @@
+@font-face {
+    font-family: ApexNew-Book;
+    src: url(/bundles/cmfrontend/fonts/ApexNew-Book.otf);
+}
+
+@font-face {
+    font-family: ApexNew-Bold;
+    src: url(/bundles/cmfrontend/fonts/ApexNew-Bold.otf);
+}
+body {
+	font-family: ApexNew-Book;
+/* 	background-color: #FFFFE5; */
+	
+}
+.modal-body {
+	padding: 0;
+	
+}
+
+.barraSuperior {
+	background-color: black;
+	color: white;
+}
+
+.barraSuperior .li a{
+	color: white;
+}
+
+.navbar-default .navbar-nav > li > a {
+/* 	color: #0080FF; */
+	color: white;	
+	font-family: ApexNew-Book;
+}
+
+.navbar-default .navbar-nav > li > a:hover {
+	color: #0080FF;
+}
+.bloque {
+	margin-top: 20px;
+}
+
+.pro {
+	padding-top: 15px;
+	padding-bottom: 15px;
+	line-height: 20px;
+	font-size: 20px;
+}
+
+.barraTransparente {
+	background-color: transparent;
+	color: white;
+	border: 0px;
+}
+.tagit-autocomplete.ui-widget-content {
+	z-index: 9999;
+}
+
+.form-filter {
+	display: inline-block;
+}
+
+.truncate {
+	display: inline-block;
+	width: 210px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+}
+
+.truncate2 {
+	display: inline-block;
+	position: relative;
+	white-space: nowrap;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+	max-width: 60%;
+	min-width: 100px;
+
+}
+
+.mensaje {
+	max-width: 40%;
+	min-width: 300px;
+}
+.fb-pic {
+	width: 40px;
+	height: 40px;
+}
+div.loading {
+	margin: 0;
+	position: absolute;
+	z-index: 1000;
+	width: 100%;
+	height: 100%;
+	opacity: .7;
+	background-color: #000;
+	background-image: url('/bundles/cmfrontend/images/loading.gif');
+	background-repeat:no-repeat;
+	background-position: center center;
+	background-size: 10%;
+	display: none;
+}
+
+textarea.form-control {
+	height: 65px;
+}
+
+.panel-base {
+	position: relative;
+	margin-top: 30px;
+	background-color: white;
+}
+
+.panel-body-outer {
+	padding: 0 !important;
+}
+
+.fb-icon {
+	width: 24px;
+	height: auto;
+}
+
+div[class*=circle-] {
+	border-radius: 50%;
+	width: 25px;
+	height: 25px;
+	display: inline-block; 
+	float: right;
+	vertical-align: middle;
+	
+}
+
+.circle-white {
+	border: 1px solid #dddddd;
+	background-color: white;
+	text-align: center;
+}
+
+
+.cm-green {
+	color: #29CA7E;
+}
+.cm-green:hover {
+	color: #29CA7E !important;
+}
+
+.cm-red {
+	color: #E84B3C;
+}
+.cm-red:hover {
+	color: #E84B3C !important;
+}
+
+.cm-blue {
+	color: #3697DC;
+}
+.cm-blue:hover {
+	color: #3697DC  !important;
+}
+
+.cm-grey {
+	color: #757575 !important;
+}
+
+.panel-tags .panel-body {
+	padding: 0 !important;
+	background-color: white !important;
+}
+
+ul.tagit {
+	border: 0 !important;
+	margin: 0 !important;
+	overflow: hidden !important;
+}
+
+.panel-heading {
+	padding: 5px 10px !important; 
+ 	background-color: #FAFAFA !important;
+ 	vertical-align: middle;
+ 	position: relative;
+}
+
+.panel-heading.row {
+	margin: 0;
+}
+
+.panel-body {
+	padding: 5px;
+}
+
+.panel-heading, .panel-title {
+	color: #000 !important;
+	font-family: ApexNew-Bold;
+	padding: 5px;
+}
+
+.btn-primary, .btn-primary:hover, .btn-primary:focus {
+	background-color: #000;
+	border: 1px solid #838383;
+	font-weight: bold;
+}
+
+.navbar {
+	margin-bottom: 5px;
+}
+
+.circle-green-unselected {
+	border: 2px solid #29CA7E;
+	border-color: #29CA7E;
+	background-color: white;
+	vertical-align: middle;
+	padding-left: 5px;
+}
+
+.circle-red-unselected {
+	border: 2px solid #E84B3C;
+	border-color: #E84B3C;
+	background-color: white;
+	vertical-align: middle;
+	padding-left: 5px;
+}
+
+.circle-blue-unselected {
+	border: 2px solid #3697DC;
+	border-color: #3697DC;
+	background-color: white;
+	vertical-align: middle;
+	padding-left: 5px; 
+}
+.circle-selected {
+	border: 2px solid white; 
+	background-color: transparent;
+	vertical-align: middle;
+ 	padding-left: 5px;
+}
+
+.circle-borrar {
+	border: 2px solid white;
+	background-color: #E84B3C;
+	text-align: center;
+	color: white;
+	font-weight: bold ;
+	padding-left: 5px;
+	margin: 1px;
+}
+
+.colorCalificacion-red {
+ 	/* background-color: #FCC9C9; */
+ 	background-color: #E84B3C !important;
+ 	margin: 0;
+
+ }
+ 
+.colorCalificacion-redOpacity {
+ 	/* background-color: #FCC9C9; */
+ 	background-color: #E84B3C !important;
+ 	opacity: 0.6;
+ 	margin: 0;
+
+ }
+ 
+.colorCalificacion-blue {
+ 	/* background-color: #C9CEFC; */
+ 	background-color: #3697DC !important;
+ 	margin: 0;
+ 	
+ 	
+ }
+.colorCalificacion-green {
+ 	/* background-color: #C9FCCB; */
+ 	background-color:#29CA7E !important;
+ 	margin: 0;
+ 	
+ }
+.colorCalificacion-white {
+ 	background-color: transparent;
+ 	margin: 0;
+ 	
+ 	white-space: nowrap;
+ } 
+.bton-delete .visible{
+  visibility: visible;
+  width:10px;
+}
+
+
+.bton-delete .invisible{
+  visibility: hidden;
+}
+
+.created-time {
+	display: inline-block;
+	vertical-align: top;
+	color: #000;
+	
+	
+	vertical-align:middle;
+	position: absolute;
+	top: 25%;
+	
+}
+
+.personaFacebook {
+	
+
+	
+	display: inline-block;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-width: 100vh;
+	max-height: inherit;
+	white-space: nowrap;
+	position: absolute;
+	top: 25%;
+	padding: 5px;
+	
+}
+
+.cm-row li.comentario {
+       /* color: inherit !important; */
+       background-color: transparent;
+		border-color: transparent;
+		padding: 0px;
+       
+}
+.cm-row li.comentario.active {
+       /* color: inherit !important; */
+       background-color: #F8F8F8 !important;
+       border-color: transparent;
+       border-radius: 2%;
+}
+
+.botones {
+	position: absolute;
+	right: 7%;
+	top: 25%;
+}
+
+.boton-menu {
+	margin: 1px
+}
+
+
+.btn-more {
+	color: #0080FF;
+	border-radius: 20%;
+		
+}
+
+.btn-large {
+	width: 100%
+}
+
+.filtros {
+	background-color: #F2F2F2 !important; 
+	/* height: 70px; */
+	vertical-align: center;
+	 border: 1px solid #D5D5D5	; 
+	/* padding: 0px !important; */
+	border-radius: 2%;
+	
+	margin-top: 20px;
+	
+}
+
+.elementoFiltro {
+	margin-top:0px;
+	margin-bottom:0px;
+	padding-top:10px;
+	/* padding-bottom:15px; * */
+	
+	margin-left: 15px;	
+}
+
+.tituloFiltros {
+	margin:5px;
+	
+}
+
+.comboFiltro {
+	margin-left: 15px;
+}
+
+.textoFiltro {
+		
+}
+
+.formularioFiltro {
+	height: 100%;
+	border-left: 1px solid #D5D5D5;
+}
+
+.contieneFiltros {
+	border-left: 1px solid #D5D5D5;
+}
+
+.headerFiltros {
+	margin-top: 20px;
+	font-family: ApexNew-Bold;	
+}
+
+.headerFiltros  > a {
+	color: black;	
+}
+
+.contieneFiltros  > li > a { 
+	color: black;	
+}
+
+.elementoFiltro  > input { 
+	radius: 2%;
+	cursor: pointer !important;
+}
+
+.linkPanelSeleccionado {
+	color: #0080FF !important;	
+}
+
+.dropdown {
+	cursor: pointer !important;
+}
+
+.accion {
+	cursor: pointer !important;
+}

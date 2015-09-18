@@ -1,0 +1,88 @@
+{% extends '::base.html.twig' %}
+{% set panel_type = "Audiencias" %}
+
+{% block title  %} Audiencias{% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets '@CMFrontendBundle/Resources/public/css/audiencias.css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+	{% stylesheets '@CMFrontendBundle/Resources/public/css/daterangepicker.css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+	{% stylesheets '@tagit_css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+{% endblock %}
+
+{% set panel_title = "Generador de audiencias" %}
+
+{% block panelbody %}
+<div class="row cm-row">
+	<div class="col-md-12 col-lg-12 col-center">
+		 	
+		 <form class="form-filter col-sm-12" role="form" method="post" action="AU/generarAudiencia">
+                  <div class="form-group col-sm-offset-2 col-sm-8">
+                  <div class="canalDeInteraccionCapa">
+                       <label >* Canal de interaccion </label> 
+                       	<select multiple id="canalDeInteraccionID" name="canalDeInteraccion[]">
+                            <option  id='post' value='post' >Post</option>
+                            <option value='conversation'>Mensajes Privados</option>
+                        </select>
+                       </div>
+                       <div class="rangoCapa" name="rango">
+                        	<label>* Rango de fechas</label>
+                        	<input class="form-control"  type="text"  name="daterange"  />
+                        </div>
+                       <div class="fanpagesCapa">
+							<label>Fanpages	</label><br>
+                            <select multiple name="fanpages[]">
+                                {% for fan_page in app.session.get('fan_pages') %}
+                                	<option value="{{fan_page.id}}"  >{{ fan_page.name }}</option>
+                                {% endfor %}
+                            </select>
+                       </div>
+						<div class="calificacionesCapa">
+                        	<label>Calificaciones</label><br>
+                            <select multiple name="calificaciones[]">
+                                <option value='1'>Neutros</option>
+                                <option value='2'>Positivos</option>
+                                <option value='3'>Negativos</option>
+                        	</select>
+                        </div>
+                        <div class="textCapa" >
+                        	<label>Filtrar por texto en los posts</label>
+                            <input class="form-control" placeholder="Texto..." name="texto"/>
+                        </div>
+                        <div class="tagsCapa" name="tags">
+                        	<label>Tags</label>
+                            <input class="form-control"  type="text" id="search-tags" name="search-tags"  placeholder="Tag1, Tag2, ..." />
+                        </div>
+                        <div class="input-group">
+                        <p class="alerta alertaVisible"> Cargar los campos obligatorios definidos con un *</p>
+					        <input id="submit" class="boton deshabilitado" type="submit" value="Generar"></input>
+					        
+                     	</div>
+                </div>
+          </form>		 
+	</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/audiencias.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/moment.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/daterangepicker.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@jquery_ui' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+       {% javascripts '@tagit_js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}

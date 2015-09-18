@@ -1,0 +1,30 @@
+{% for conversation in conversations %}
+	{% if conversation.calificacion == 0 %}
+		{% set calificacion = 'white' %}
+	{% elseif conversation.calificacion == 1 %}
+	    {% set calificacion = 'blue' %}
+	{% elseif conversation.calificacion == 2 %}
+	    {% set calificacion = 'green' %}
+	{% elseif conversation.calificacion >= 3 %}
+	    {% set calificacion = 'red' %}
+	{% endif %}
+	<a href="#" class="conversation list-group-item" data-conversation-id="{{conversation.id}}" data-conversation-updated-time="{{conversation.updatedTime}}" data-calificacion="{{ conversation.calificacion }}" data-fanpagename="{{ (app.session.get('filter').getFanPageName()) }}">
+		<div class="panel panel-mensaje colorCalificacion-{{ calificacion }}">
+				<row>
+					<img class="fb-pic" src="http://graph.facebook.com/{{conversation.messages[0].from.id}}/picture?type=square&height=32"/><div class="truncate nombreEnviadoPor"><a class="personaFacebookLink" href=" https://www.facebook.com/{{conversation.messages[0].from.id}} ">{{ conversation.messages[0].from.name }}<a> </div>
+					<div class="snippet truncate2" title="{{ conversation.snippet }}">
+					{{ conversation.snippet }}
+				</div>
+					<div class="tags">
+						<button id="tagBtn{{ conversation.id }}" class="btn-tag btn btn-default" type="button" data-toggle="popover" data-container="body" data-html="true" data-content="{% include  "CMFrontendBundle:PrivateMessage:tag-popup.html.twig"%}" data-conversation-id="{{ conversation.id }}" data-title="Tags" data-placement="bottom"  ><span class="glyphicon glyphicon-tags"></span></button>
+					</div>
+					<div class="botones">
+						<div class="circle circle-red-unselected {% if conversation.calificacion == 3 %} circle-selected {% endif %}  btn-qualify col-xs-1" data-calificacion=3></div>
+						<div class="circle circle-blue-unselected {% if conversation.calificacion == 1 %} circle-selected {% endif %} btn-qualify col-xs-1" data-calificacion=1></div>
+						<div class="circle circle-green-unselected {% if conversation.calificacion == 2 %} circle-selected {% endif %} btn-qualify col-xs-1" data-calificacion=2></div>
+					</div>
+					
+				</row>
+		</div>
+	</a>
+{% endfor %}

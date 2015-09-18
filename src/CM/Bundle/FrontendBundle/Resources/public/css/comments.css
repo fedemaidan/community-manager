@@ -1,0 +1,117 @@
+body {
+	color: #555 !important;
+}
+.cm-row {
+	max-height: 100vh;
+	margin: 0;
+	display: flex;
+	flex-flow: row column;
+	padding: 0;
+	
+	
+}
+
+.comentarioContenido {
+	color: #555 !important;
+	padding-top: 5px;
+}
+
+.cm-row [class^=col-]{
+	padding: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	
+}
+.panel-heading .row [class^=col-] {
+	overflow: hidden;
+	display: inline-block;
+	text-overflow: ellipsis;
+	padding: 0;		
+}
+
+.circle {
+	float: none !important		
+}
+
+.cm-row .list-group {
+	margin: 0 ;
+	background-color: transparent;
+	padding: 0px;
+}
+
+.panel-heading [class^=col-] {
+	white-space: nowrap;
+	overflow: hidden;
+	display: inline-block;
+	text-overflow: ellipsis;
+	vertical-align: text-top;
+	padding: 0;
+}
+.paginaFacebook{
+	color: #555 !important;
+	background-color: transparent;
+	display: inline-block;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-width: 100vh;
+	max-height: inherit;
+	white-space: nowrap;
+	padding: 5px;	
+	
+}
+
+.descripcionPost {
+	
+
+	color: #555 !important;
+	display: inline-block;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-width: 100vh;
+	max-height: inherit;
+	white-space: nowrap;
+	padding: 5px;
+}
+
+.comentario .created-time {       
+       vertical-align: top;
+       
+       position: relative;
+       padding: 5px;
+       
+}
+
+.created-timeComentario {
+	display: inline-block;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-width: 100vh;
+	min-width: 30vh;
+	max-height: inherit;
+	white-space: nowrap;
+	position: absolute;
+	top: 25%;
+	padding: 5px;
+	color: #555 !important;
+}
+.panel-default {
+	margin-bottom: 0px;
+	background-color: transparent;
+}
+.personaFacebook {
+	position: relative;
+	color: #555 !important;
+}
+
+
+.botones {
+	right: 1%;
+}
+
+.btn-danger {
+display: inline-block;
+float: right;
+vertical-align: middle;	
+
+
+}

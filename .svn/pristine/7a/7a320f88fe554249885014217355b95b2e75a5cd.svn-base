@@ -1,0 +1,13 @@
+parameters:
+    cm.cm_service.class: CM\Bundle\ModelBundle\Service\CMService
+    cm.fb_service.class: CM\Bundle\ModelBundle\Service\FacebookService
+
+services:
+    fb_service:
+        class:        %cm.fb_service.class%
+        arguments:
+            { container: @service_container }
+    cm_service:
+        class:        %cm.cm_service.class%
+        arguments:
+            { container: @service_container, entityManager: "@doctrine.orm.entity_manager", solr: "@solr.client", fbService: "@fb_service" }

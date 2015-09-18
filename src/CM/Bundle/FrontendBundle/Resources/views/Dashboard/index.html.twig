@@ -1,0 +1,63 @@
+{% extends '::base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+{% set panel_type = "Dashboard" %}
+{% block stylesheets %}
+	{% stylesheets '@CMFrontendBundle/Resources/public/css/daterangepicker.css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+{% endblock %}
+
+{% set panel_title = "Dashboard" %}
+{% block panelbody %}
+<div class="well">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Cantidad de fans por Fan Page</div>
+            <div class="panel-body fans-per-fanpage" id="fans-per-fanpage">
+
+            </div>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Evolución de fans por Fan Page</div>
+            <div class="panel-body fans-per-month " id="fans-per-month"></div>
+        </div>
+      </div>
+    
+    <div class="col-md-12">    
+    		<div class="panel-fechas">
+            <form class="form-inline" role="form">
+        		<label>Rango de fechas</label>
+                <input class="form-control rango"  type="text"  id="daterange" name="daterange" />    
+        		</form>
+      		</div>
+            <div class="panel panel-default">
+            <div class="panel-heading">Calificaciones</div>
+            <div class="panel-body calificaciones" id="calificaciones"></div>
+        	</div>
+        </div>
+        
+      </div>
+      </div>
+  </div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/highcharts.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/dashboard.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/moment.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/daterangepicker.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}

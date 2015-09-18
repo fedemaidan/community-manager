@@ -1,0 +1,16 @@
+						
+						<li class="dropdown " >
+							 <a class="dropdown-toggle" data-toggle="dropdown">{{ panel_title|default('') }}<span class="caret"></span></a>
+						 	<ul class="dropdown-menu comboFiltro filtrosFanpage" role="menu" data-fanpageid="{{app.session.get('filter').getFanPageId() }}">
+						 	<li><a class="filtroFanpage" data-fanpageid="0	" >Todos</a></li>
+						 	{% for fan_page in app.session.get('fan_pages') %}
+		 						<li><a class="filtroFanpage" data-fanpageid="{{ fan_page.id }}" >{{ fan_page.name }}</a></li>
+		 					{% endfor %}
+	 						</ul>
+	 					</li>	
+	 					<li>
+						<div class="elementoFiltro">
+                            <button class="btn btn-default btn-buscar" data-prefijo="PT">Buscar</button>
+                        </div>
+                       </li>   	 					
+                           	 					

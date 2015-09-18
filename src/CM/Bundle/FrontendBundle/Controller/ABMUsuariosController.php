@@ -1,0 +1,112 @@
+<?php
+
+namespace CM\Bundle\FrontendBundle\Controller;
+
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+
+class ABMUsuariosController extends Controller {
+	
+	/**
+	 * @Route("conf_usuarios", name="abmUsuarios")
+     * @Security("has_role('ROLE_ADMIN')")
+	 * @Template()
+	 */
+	public function indexAction(Request $request)
+	{
+		$roles = $this->container->get('cm_service')->getRoles();
+		$usuarios = $this->container->get('cm_service')->getUsers();
+		$user = $this->container->get('cm_service')->getUserById($request->get('user',null));
+		
+		return array('pestaña' => $request->get('pestaña','lista'),
+						'usuarios' => $usuarios,
+						'respuesta' => $request->get('respuesta',null),
+						'user' => $user,
+						'roles' => $roles);
+	}
+	
+	/**
+	 * @Route("/alta/usuario", name="altaUsuario")
+	 * @Security("has_role('ROLE_ADMIN')")
+	 */
+	
+	public function altaUsuarioAction(Request $request)
+	{
+		
+		if ($request->get('password') != $request->get('password2')) {
+			$resultado = "USUARIO NO AGREGADO POR PASSWORDS DISTINTAS"; 
+		}  else {
+			$resultado = $this->container->get('cm_service')->insertarUsuario($request->get('nombre'),
+															$request->get('apellido'),
+															$request->get('email'),
+															$request->get('password'),
+															$request->get('rol'));
+		}
+		
+		return $this->redirect($this->generateUrl('abmUsuarios',
+				array('pestaña' => 'alta',
+						'respuesta' => $resultado)));
+	}
+	
+	/**
+	 * @Route("/baja/usuario", name="bajaUsuario")
+	 * @Security("has_role('ROLE_ADMIN')")
+	 */
+	
+	public function bajaUsuariosAction(Request $request) {
+		$usuario_id = $request->get('usuario');
+		
+		$this->container->get('cm_service')->eliminarUsuario($usuario_id);
+		
+		
+		return $this->redirect($this->generateUrl('abmUsuarios',
+				array('pestaña' => 'lista')));
+	}
+	
+	/**
+	 * @Route("/modificar/usuarioSeleccionado", name="mostrarEditarUsuario")
+	 * @Security("has_role('ROLE_ADMIN')")
+	 */
+	
+	public function seleccionarUsuariosAction(Request $request) {
+			
+		
+		$user_id = $request->get('usuario');
+		$roles = $this->container->get('cm_service')->getRoles();
+						
+		return $this->redirect($this->generateUrl('abmUsuarios',
+				array('pestaña' => 'modificar',
+				'user' => $user_id)));
+			
+	}
+	
+	/**
+	 * @Route("/modificar/usuario", name="modificarUsuario")
+	 * @Security("has_role('ROLE_ADMIN')")
+	 */
+	
+	public function modificarFanPageAction(Request $request) {
+		
+		$roles = $this->container->get('cm_service')->getRoles();
+
+		if ($request->get('password') != $request->get('password2')) {
+			$resultado = "USUARIO NO AGREGADO POR PASSWORDS DISTINTAS";
+		}  else {
+			$resultado = $this->container->get('cm_service')->actualizarUser($request->get('id'),
+				$request->get('nombre'),
+				$request->get('apellido'),
+				$request->get('email'),
+				$request->get('rol'),
+				$request->get('password',null));
+		}
+		
+		return $this->redirect($this->generateUrl('abmUsuarios',
+				array('pestaña' => 'lista',
+				'roles' => $roles)));
+	}
+}

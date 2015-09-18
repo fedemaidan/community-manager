@@ -1,0 +1,49 @@
+{% extends '::base.html.twig' %}
+
+{% block title  %} Fanpage{% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets '@CMFrontendBundle/Resources/public/css/abmfanpage.css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+{% endblock %}
+
+{% set panel_title = "Fanpage" %}
+
+{% block panelbody %}
+<div class="row cm-row">
+	<div class="col-md-12 col-lg-12 col-center">
+		 
+		 <nav class="navbar navbar-default" role="navigation">
+                  <div class="container-fluid">
+                      <ul class="nav navbar-nav navbar-left">
+                      		<li class="col-md-3 accion btn-alta">Alta</li>
+							<li class="col-md-3 accion btn-baja">Baja</li>
+							<li class="col-md-3 accion btn-modificar">Modificar</li>
+                      </ul>
+                      </div>
+                </nav>
+		 <div class="alta">	
+		 		{% include "CMFrontendBundle:ABMFanPage:altaFanpage.html.twig" %}	 
+          </div>
+          <div class="baja">	
+                {% include "CMFrontendBundle:ABMFanPage:bajaFanpage.html.twig" %}		 
+          </div>
+          <div class="modificacion">	
+          	 	{% include "CMFrontendBundle:ABMFanPage:modificarFanpage.html.twig" %}
+          </div>
+	</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/abmfanpage.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@jquery_ui' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+       {% javascripts '@tagit_js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}

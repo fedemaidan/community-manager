@@ -1,0 +1,42 @@
+cm_model:
+    resource: "@CMModelBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+obtenerComentarios:
+  path: api/obtenerComentarios
+  defaults: { _controller: CMAPIBundle:Api:obtenerComentarios , limit: 10}
+
+calificarComentarios:
+  path: api/calificarComentarios
+  defaults: { _controller: CMAPIBundle:Api:calificarComentarios , limit: 10}
+
+logs:
+  path: api/logs
+  defaults: { _controller: CMAPIBundle:Log:logs }
+  
+login:
+    pattern:  /login
+    defaults: { _controller: CMSecurityBundle:Secured:login }
+
+login_check:
+  pattern: /login_check
+
+logout:
+  pattern: /logout
+
+cm_security:
+    resource: "@CMSecurityBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+cm_frontend:
+    resource: "@CMFrontendBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+cm_api:
+    resource: "@CMAPIBundle/Controller/"
+    type:     annotation
+    prefix:   /
+

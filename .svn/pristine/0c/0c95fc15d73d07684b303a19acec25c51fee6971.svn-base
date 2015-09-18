@@ -1,0 +1,84 @@
+{% extends '::base.html.twig' %}
+
+{% block title  %} Posts {% endblock %}        
+
+{% block stylesheets %}
+       {% stylesheets '@CMFrontendBundle/Resources/public/css/post.css' %}
+               <link rel="stylesheet" href="{{ asset_url }}">
+       {% endstylesheets %}
+       {% stylesheets '@tagit_css' %}
+               <link rel="stylesheet" href="{{ asset_url }}">
+       {% endstylesheets %}
+{% endblock %}
+
+
+{% set panel_type = "Posts" %}
+{% set panel_title = (app.session.get('filter').getFanPageName()) %}
+
+{% block panelbody %}
+       <div class="cm-row">
+               <div class="col-md-12 col-lg-12 col-left">
+                       <div class="list-group post-container">
+                               {{ render(controller('CMFrontendBundle:Post:post')) }}
+                               <button class="btn btn-default  bton-more col-md-offset-5">Ver mas</button>
+{#                                <button class="btn btn-default btn-more bton-more col-md-offset-5">Ver mas</button>#}
+                       </div>
+               </div>
+	<!-- Modal -->
+	<div class="modal fade" id="messages-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg">
+	    <div class="modal-content">
+	      <div class="modal-body cm-row row">
+
+      		<div class="col-md-9 col-lg-9 col-comments-container">
+      			<div class="message-title panel-heading ">
+      				<row>Comments</row>	
+      			</div>
+      			<div class="col-scroll">
+      			
+      				<div class="btn btn-primary bton-more-comments-before">Anteriores</div>
+					<div class="comments-container">
+						{{ render(controller('CMFrontendBundle:Post:allCommentsUploaded')) }}
+					</div>
+					<div class="btn btn-primary bton-more-comments-after">Posteriores</div>
+				
+				</div>
+				
+			</div>
+
+			<div class="col-md-3 col-lg-3">
+				<div class="panel panel-default panel-tags">
+					<div class="panel-heading">Tags <span class="glyphicon glyphicon-tags"></span><span class="tag-label-response label label-success pull-right" style="display:none"></span></div>
+					<div class="panel-body">
+						<ul id="tags">
+						</ul>
+						<input class="tags-input" type="hidden" style="display:none;" value="" name="tags">
+					</div>
+				</div>
+			</div>
+
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+
+       </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/post.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@jquery_ui' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+       {% javascripts '@tagit_js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    
+    {% javascripts '@CMFrontendBundle/Resources/public/js/filtros.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+	    {% endjavascripts %}
+{% endblock %}

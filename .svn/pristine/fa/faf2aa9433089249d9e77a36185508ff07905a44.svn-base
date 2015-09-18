@@ -1,0 +1,52 @@
+{% if comentario.calificacion == 0 %} 
+ 	{% set calificacion = 'white' %}
+{% elseif comentario.calificacion == 1 %} 
+	{% set calificacion = 'blue'%} 
+{% elseif comentario.calificacion == 2 %} 
+	{% set calificacion = 'green' %} 
+{% elseif comentario.calificacion == 3 %} 
+	{% set calificacion = 'red' %}
+{% elseif comentario.calificacion >= 4 %} 
+	{% set calificacion = 'redOpacity' %}  
+{% endif %}
+{# 	<a href="#" class="conversation list-group-item" data-conversation-id="{{conversation.id}}" data-conversation-updated-time="{{conversation.updatedTime}}" data-calificacion="{{ conversation.calificacion }}">#}
+{# 		<div class="panel panel-mensaje colorCalificacion-{{ calificacion }}">#}
+{# 				<row>#}
+{# 					<img class="fb-pic" src="http://graph.facebook.com/{{conversation.messages[0].from.id}}/picture?type=square&height=32"/><div class="truncate">{{ conversation.messages[0].from.name }}</div>#}
+{# 					<div class="snippet truncate2">#}
+{# 					{{ conversation.snippet }}#}
+{# 				</div>#}
+{# 					<div class="tags">#}
+{# 						<button id="tagBtn{{ conversation.id }}" class="btn-tag btn btn-default" type="button" data-toggle="popover" data-container="body" data-html="true" data-content="{% include  "CMFrontendBundle:PrivateMessage:tag-popup.html.twig"%}" data-conversation-id="{{ conversation.id }}" data-title="Tags" data-placement="bottom"  ><span class="glyphicon glyphicon-tags"></span></button>#}
+{# 					</div>#}
+{# 					<div class="botones">#}
+{# 						<div class="circle circle-green-unselected {% if conversation.calificacion == 2 %} circle-selected {% endif %} btn-qualify col-xs-1" data-calificacion=2></div>#}
+{# 						<div class="circle circle-blue-unselected {% if conversation.calificacion == 1 %} circle-selected {% endif %} btn-qualify col-xs-1" data-calificacion=1></div>#}
+{# 						<div class="circle circle-red-unselected {% if conversation.calificacion == 3 %} circle-selected {% endif %}  btn-qualify col-xs-1" data-calificacion=3></div>#}
+{# 					</div>#}
+					
+{# 				</row>#}
+{# 		</div>#}
+{# 	</a>#}
+<li href="#" class="comentario list-group-item disabled" data-comentario-id="{{ comentario.id }}" data-calificacion="{{ comentario.calificacion}}" data-created-time="{{ comentario.fechaDeCreacion }}">
+	<div class="panel panel-default">
+		<div class="row  panel-mensaje colorCalificacion-{{ calificacion }}">
+		<row>
+			<div class="imagen col-xs-1"><img class="fb-pic" alt="pic" src="http://graph.facebook.com/{{ comentario.personaFacebookId }}/picture?type=square&height=32" /></div>	
+			<div class="personaFacebook col-xs-1" title="{{ comentario.personaNombre }}"> {{ comentario.personaNombre }}</div>
+			<div class="descripcionPost col-xs-1" title="{{ comentario.post.getContenido() }}">{{ comentario.post.getContenido() }}</div>
+			<div class="paginaFacebook col-xs-1" title="{{ comentario.post.fanPage.name }}">{{ comentario.post.fanPage.name }}</div>
+			<div class="comentarioContenido col-xs-5 truncate2" title="{{ comentario.comentario }}">{{ comentario.comentario }}</div>
+			<div class="created-timeComentario col-xs-2">{{ comentario.fechaDeCreacion|date("d/m/Y H:i:s") }}</div>
+			<div class="botones ">	
+			<div class="circle circle-green-unselected {% if comentario.calificacion == 2 %} circle-selected {% endif %} bton-qualify " data-calificacion=2></div>
+			<div class="circle circle-blue-unselected {% if comentario.calificacion == 1 %} circle-selected {% endif %} bton-qualify " data-calificacion=1></div>
+			<div class="circle circle-red-unselected {% if comentario.calificacion == 3 %} circle-selected {% endif %}  bton-qualify " data-calificacion=3></div>
+			<div class="circle btn-xs btn-danger bton-delete {% if comentario.calificacion != 3 and comentario.calificacion != 4  %} invisible {% endif %} {% if comentario.calificacion == 3 or comentario.calificacion == 4 %} visible {% endif %}" data-calificacion=4>Eliminar</div>
+			</div>
+			</row>
+		</div>
+		
+		
+	</div>
+</li>

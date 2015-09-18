@@ -1,0 +1,62 @@
+$(document).ready(function() {
+	init();
+});
+
+
+function init() {
+	
+	$(document).on('click','a.filtroFanpage', {} ,function(e){
+			var nuevoFanpageId = $(this).data("fanpageid");
+			var nuevoFanpageName = $(this).text();
+			$(this).parents("ul").data("fanpageid",nuevoFanpageId);
+			$(this).parents("li").find('a.dropdown-toggle').text(nuevoFanpageName);
+			
+	});
+
+	$(document).on('click','a.filtroCalificacion', {} ,function(e){
+		var nuevoCalificacion = $(this).data("calificacion");
+		var nuevoCalificacionName = $(this).text();
+		$(this).parents("li.dropdown").data("calificacion",nuevoCalificacion);
+		$(this).parents("li.dropdown").find('a.dropdown-toggle').text(nuevoCalificacionName);			
+	});
+	
+	$(document).on('click','.btn-buscar', {} ,function(e){
+		
+		var nuevoFanpageId = $(document).find("ul.filtrosFanpage").data("fanpageid");
+		var conjCalificaciones = $(document).find("li.filtrosCalificacion");
+		if (conjCalificaciones.length > 0)
+			var nuevoCalificacion = conjCalificaciones.data("calificacion");
+		else 
+			var nuevoCalificacion = '';
+		
+		var conjTags = $('li.filtroTags').find('input');
+		if (conjTags.length > 0)
+			var nuevoTags = $('li.filtroTags').find('input')[0].value;
+		else
+			var nuevoTags = '';
+		
+		
+		var conjTexto =  $('li.filtroTexto').find('input');
+		
+		if (conjTexto.length > 0)
+			var nuevoTexto  = $('li.filtroTexto').find('input')[0].value;
+		else 
+			var nuevoTexto = '';
+		
+		var prefijo = $(this).data("prefijo");
+		var url = prefijo + "/cargarFiltrosEnSesion"
+		$.ajax({
+			type: "POST",
+			url: url,
+			data: { fanpageId : nuevoFanpageId,
+					calificacion : nuevoCalificacion,
+					tags: nuevoTags,
+					texto: nuevoTexto},
+		})
+		.done(function(data ) {
+			location.reload(false);
+		});
+	});
+	
+
+}

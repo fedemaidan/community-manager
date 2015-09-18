@@ -1,0 +1,5 @@
+{% for comentario in comentariosNuevos %}
+	{{ render(controller('CMFrontendBundle:Post:comment',{
+        'comentario': comentario,
+    })) }}
+{% endfor %}

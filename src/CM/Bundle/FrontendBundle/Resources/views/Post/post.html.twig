@@ -1,0 +1,30 @@
+<ul class="list-group">
+{% for post in posts %}
+<li class="post list-group-item" data-post-id="{{ post.id }}" data-post-created-time="{{ post.fechaDeCreacion }}">
+               <div class="panel panel-default">
+                       <div class="panel-mensaje">
+                                <div class="col-xs-2">
+                                <a class="fanpage titulo" href="{{ post.fanPage.url }}">{{ post.fanPage.name }}</a>
+                                </div>
+                                <div class="postContenido col-xs-6 truncate2" title="{{ post.contenido }}">
+                               			{{ post.contenido }}                                               
+                               </div>
+							<div class="created-time2 time-post col-xs-2">{{ post.fechaDeCreacion|date("d/m/Y h:i:s")}}</div>
+							<div class="tags2 col-xs-1">
+									<button id="tagBtn{{ post.id }}" class="btn-tag btn btn-default" type="button" data-toggle="popover" data-container="body" data-html="true" data-content="{% include  "CMFrontendBundle:Post:tag-popup.html.twig"%}" data-post-id="{{ post.id }}" data-title="Tags" data-placement="bottom"  ><span class="glyphicon glyphicon-tags"></span></button>
+{# 									{% if  post.link != "" %}<a class="link-objeto btn btn-default" href="{{ post.link}}">{{ post.getAclaracionLink() }}</a>{% endif %}#}
+							</div>
+                               {% if  post.link != "" %}<div class="verElemento col-xs-1">
+									<a class="link-objeto btn btn-default"  target="_blank" href="{{ post.link}}">{{ post.getAclaracionLink() }}</a>
+							</div>	
+							{% endif %}
+							
+							
+                            
+                               
+                       </div>
+               </div>
+       
+</li>
+{% endfor %}
+</ul>

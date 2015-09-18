@@ -1,0 +1,72 @@
+<script>
+  // This is called with the results from from FB.getLoginStatus().
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+  }
+
+  function statusChangeCallback(response) {
+	  {% if fanpage.appId is defined%} statusChangeCallback2(response, '{{ fanpage.appId }}', '{{ fanpage.appSecret }}' , '{{ fanpage.id }}') {% endif %};
+	}
+  
+  
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '{% if fanpage.appId is defined%}{{ fanpage.appId }}{% endif %}',
+    cookie     : true,  // enable cookies to allow the server to access 
+                        // the session
+    xfbml      : true,  // parse social plugins on this page
+    version    : 'v2.2' // use version 2.1
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  function testAPI() {}
+</script>
+
+
+<form class="form-filter col-sm-12" role="form" method="post" action="modificar/fanpage">
+                <div class="form-group col-sm-offset-2 col-sm-8">
+                	<label>MODIFICAR FANPAGE</label>
+                	<hr>
+                    <input class="form-control idfan"  {% if fanpage is not null%} value={{ fanpage.id }} {% endif %}  type="text" id="id" name="id" style="display:none;" />
+                 	<label>NOMBRE</label>
+                    <input class="form-control"  {% if fanpage is not null%} value={{ fanpage.name }} {% endif %} type="text" id="nombre" placeholder="Ingresar nombre" name="nombre"  />
+                    <label>ID</label>
+                    <input class="form-control"  {% if fanpage is not null%} value={{ fanpage.fbId }} {% endif %} type="text" id="fb_id" placeholder="Ingresar ID" name="fb_id"  />
+                    <label>URL</label>
+                    <input class="form-control"  {% if fanpage is not null%} value={{ fanpage.url }} {% endif %} type="text"  id="url" placeholder="Ingresar URL" name="url"  />
+                    <label>APP ID</label>
+                    <input class="form-control" id="appId" {% if fanpage is not null%} value={{ fanpage.appId }} {% endif %} type="text"  id="app_id" placeholder="Ingresar App Id" name="app_id"  />
+                    <label>APP SECRET</label>
+                    <input class="form-control " id="appSecret" {% if fanpage is not null%} value={{ fanpage.appSecret }} {% endif %} type="text"  id="app_secret" placeholder="Ingresar App Secret" name="app_secret"  />
+                    <label>ACCESS TOKEN</label>
+                    <input class="form-control {% if fanpage is not null %}{% if fanpage.accesTokenActualizado != 1 %}input-danger{% endif %}{% endif %}"  {% if fanpage is not null%} value={{ fanpage.accessToken}} {% endif %} type="text"  id="access_token" placeholder="Ingresar Access Token" name="access_token"  />
+                    <br>
+                    <input id="submit" class="boton" type="submit" value="Actualizar"></input>
+                    {% if fanpage is not null %}
+                    {% if fanpage.accesTokenActualizado == 0 %}
+					<fb:login-button data-scope="read_page_mailboxes,read_mailbox,read_stream" onlogin="checkLoginState();">
+					Actualizar Access Token
+						</fb:login-button>
+					<div id="status"> 
+						Access_token expiro
+					</div>
+					{% endif	 %}
+                    {% endif %}
+                </div>
+</form>

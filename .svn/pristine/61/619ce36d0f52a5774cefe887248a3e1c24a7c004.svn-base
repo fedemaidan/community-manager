@@ -1,0 +1,3 @@
+{% for comentario in comentariosNuevos %}
+	{% include "CMFrontendBundle:Comments:comment.html.twig" %}
+{% endfor %}

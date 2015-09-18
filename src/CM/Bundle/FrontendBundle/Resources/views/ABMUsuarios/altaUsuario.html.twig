@@ -1,0 +1,27 @@
+<div class="alta">	
+	<form class="form-filter col-sm-12" role="form" method="post" action="alta/usuario">
+                <div class="form-group col-sm-offset-2 col-sm-8">
+                	<label>AGREGAR USUARIO</label>
+                	<hr>
+                	<label>ROL</label>
+                    <select class="roles" name="rol">
+                                {% for rol in roles %}
+                                	<option value="{{ rol.id }}"  >{{ rol.name }}</option>
+                                {% endfor %}
+                        </select>
+                 	<label>NOMBRE</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar nombre" name="nombre"  />
+                    <label>APELLIDO</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar apellido" name="apellido"  />
+                    <label>EMAIL</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar email" name="email"  />
+                    <label>PASSWORD</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar password" name="password"  />
+                    <label>REESCRIBIR PASSWORD</label>
+                    <input class="form-control"  type="text"  placeholder="Reescribir password" name="password2"  />
+                    <br>
+                    <input id="submit" class="boton" type="submit" value="Dar de alta"></input>
+                    <p >{% if respuesta is not null %} {{ respuesta }} {% endif %}</p>
+                </div>
+          </form>		 
+</div>

@@ -1,0 +1,21 @@
+
+<form class="form-filter col-sm-12" role="form" method="post" action="alta/fanpage">
+                <div class="form-group col-sm-offset-2 col-sm-8">
+                	<label>AGREGAR FANPAGE</label>
+                	<hr>
+                 	<label>NOMBRE</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar nombre" name="nombre"  />
+                    <label>ID</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar ID" name="fb_id"  />
+                    <label>URL</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar URL" name="url"  />
+                    <label>APP ID</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar App Id" name="app_id"  />
+                    <label>APP SECRET</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar App Secret" name="app_secret"  />
+                    <label>ACCES TOKEN</label>
+                    <input class="form-control"  type="text"  placeholder="Ingresar Access Token" name="access_token"  />
+                    <br>
+                    <input id="submit" class="boton" type="submit" value="Dar de alta"></input>
+                </div>
+          </form>	

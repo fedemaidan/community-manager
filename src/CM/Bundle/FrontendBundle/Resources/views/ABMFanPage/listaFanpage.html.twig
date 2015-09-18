@@ -1,0 +1,28 @@
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Nombre</th>
+						<th>Id</th>
+						<th>Url</th>
+{# 						<th>App id</th>#}
+{# 						<th>App secret</th>#}
+{# 						<th>Access token</th>#}
+						<th>Editar</th>
+						<th>Eliminar</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for fanpage in fanpages %}
+					<tr>
+						<td>{{ fanpage.name }}</td>
+						<td>{{ fanpage.fbId}}</td>
+						<td>{{ fanpage.url }}</td>
+{# 						<td>{{ fanpage.appId }}</td>#}
+{# 						<td>{{ fanpage.appSecret }}</td>#}
+{# 						<td>{{ fanpage.accessToken }}</td>#}
+						<td><a href=" {{ path('seleccionarFanPage', { 'fanpage' : fanpage.id}) }}">Editar </a></td>
+						<td><a href=" {{ path('bajaFanPage', { 'fanpage' : fanpage.id }) }}">Eliminar </a></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>

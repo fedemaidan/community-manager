@@ -1,0 +1,17 @@
+@CHARSET "UTF-8";
+
+.accion{
+	color:#777777;
+	padding-top: 15px;
+	padding-bottom: 15px;
+	
+}
+
+select {
+	width: 100%;
+	margin-bottom: 10px;	
+}
+
+.input-danger {
+	color: red
+}

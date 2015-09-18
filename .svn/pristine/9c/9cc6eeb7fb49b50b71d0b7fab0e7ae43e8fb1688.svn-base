@@ -1,0 +1,32 @@
+{% extends '::base.html.twig' %}
+
+{% block title %}Community Manager{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {% stylesheets '@CMSecurityBundle/Resources/public/css/login.css' %}
+        <link rel="stylesheet" href="{{ asset_url }}">
+    {% endstylesheets %}
+{% endblock %}
+
+{% block body %}
+
+    <form action="{{ path("recoverPassword") }}" class="form-horizontal form-box" method="post">
+        <fieldset>
+            <div class="fields">
+                <!-- Form Name -->
+                <legend>Recuperar password</legend>
+                {% if error %}
+                    <div class="text-error">{{ error }}</div>
+                {% endif %}
+                <!-- Text input-->
+                <input id="username" name="username" type="text" placeholder="Username" class="form-control input-lg" value="{{ last_username }}" required>
+                <div class="user-icon"></div>
+                <!-- Password input-->
+            </div>
+            <div class="footer">
+                <button type="submit"  class="btn btn-primary btn-large">Enviar mail con password nueva</button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

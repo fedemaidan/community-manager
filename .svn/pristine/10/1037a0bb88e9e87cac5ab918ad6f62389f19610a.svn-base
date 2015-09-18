@@ -1,0 +1,39 @@
+{% extends '::base.html.twig' %}
+
+{% block title  %} Comments {% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets '@CMFrontendBundle/Resources/public/css/comments.css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+	{% stylesheets '@tagit_css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+{% endblock %}
+
+{% set panel_type = "Comments" %}
+{% set panel_title = (app.session.get('filter').getFanPageName()) %}
+
+{% block panelbody %}
+<div class="row cm-row">
+	<div class="col-md-12 col-lg-12 col-center">
+		 {{ render(controller('CMFrontendBundle:Comments:mostrarComentarios')) }}
+		 <button class="btn btn-default btn-more bton-mas-comentarios col-md-offset-5">Ver mas</button>
+	</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/comments.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@jquery_ui' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+       {% javascripts '@tagit_js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/filtros.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+	    {% endjavascripts %}
+{% endblock %}

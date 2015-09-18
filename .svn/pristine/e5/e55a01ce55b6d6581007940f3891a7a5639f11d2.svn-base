@@ -1,0 +1,633 @@
+<?php
+
+/**
+ * Created by JetBrains PhpStorm.
+ * User: matias
+ * Date: 9/19/13
+ * Time: 2:59 PM
+ * To change this template use File | Settings | File Templates.
+ */
+namespace CM\Bundle\ModelBundle\Service;
+
+use Doctrine\ORM\EntityManager;
+use FS\SolrBundle\Solr;
+use FS\SolrBundle\Doctrine\Hydration\HydrationModes;
+use CM\Bundle\ModelBundle\Entity\Conversation;
+use CM\Bundle\ModelBundle\Entity\CalificableInterface;
+use CM\Bundle\ModelBundle\Entity\TaggeableInterface;
+use CM\Bundle\ModelBundle\Entity\Tag;
+use CM\Bundle\ModelBundle\Entity\FanPage;
+use CM\Bundle\ModelBundle\Entity\User;
+use CM\Bundle\ModelBundle\Service\FacebookService;
+use CM\Bundle\APIBundle\Command\CMConversationMessageCommand;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
+use Symfony\Component\DependencyInjection\Container;
+
+class CMService {
+
+    private $container;
+
+
+    
+    /**
+    *
+    * @var EntityManager
+    */
+    private $em;
+
+    /**
+    *
+    * @var Solr
+    */
+    private $solr;
+    
+    /**
+     * 
+     * @var FacebookService
+     */
+    private $fb_service;
+
+
+    public function __construct(Container $container, EntityManager $entityManager, Solr $solr, FacebookService $fb_service)
+    {
+        $this->container = $container;
+        $this->em = $entityManager;
+        $this->solr = $solr;
+        $this->fb_service = $fb_service;
+    }
+    
+    
+
+    function getCommentsMasViejosSinCalificar($limit) {
+    	return $this->em->getRepository('CMModelBundle:Comment')->getCommentsMasViejosSinCalificar($limit);
+    }
+    
+    function getBloquearComentarios($comentarios) {
+		
+    	foreach ($comentarios as $comentario) {
+    		$comentario->setFechaDeBloqueo(date("Y-m-d H:i:s"));
+    	}
+    	
+    	$this->em->flush();
+    }
+    
+    
+    
+    public function getUsers() {
+    	return $this->em->getRepository('CMModelBundle:User')->findAll();
+    }
+    public function getRoles() {
+ 		return $this->em->getRepository('CMModelBundle:Role')->findAll();   	
+    }
+    
+    public function getRoleById($id) {
+    	return $this->em->getRepository('CMModelBundle:Role')->findOneById($id);
+    }
+    
+
+    public function getUserById($id) {
+    	return $this->em->getRepository('CMModelBundle:User')->findOneById($id);
+    }
+    public function getUserByEmail($email) {
+    	return $this->em->getRepository('CMModelBundle:User')->findOneByEmail($email);
+    }
+    
+    public function getFanPages() {
+        return $this->em->getRepository('CMModelBundle:FanPage')->findAll();
+    }
+    
+    public function getFanPageById($id) {
+        return $this->em->getRepository('CMModelBundle:FanPage')->findOneById($id);
+    }
+
+    public function getFanPageByFbId($fb_id) {
+        return $this->em->getRepository('CMModelBundle:FanPage')->findOneBy(array('fb_id' => $fb_id));
+    }
+    
+    public function getFanPageByName($name) {
+        return $this->em->getRepository('CMModelBundle:FanPage')->findOneByName($name);
+    }
+    
+    public function getConversationById($id) {
+        return $this->em->getRepository('CMModelBundle:Conversation')->findOneById($id);
+    }
+    
+    public function getConversationsByFanPage($filter, $start, $limit) {
+        // Solr
+        $query = $this->solr->createQuery('CMModelBundle:Conversation');
+        $query->setUseAndOperator(true);
+        $query->setUseWildcard(false);
+        $query->setRows($limit);
+        $query->setOmitHeader(false);
+        $query->setHydrationMode(HydrationModes::HYDRATE_INDEX);
+        $query->setStart($start);
+        $query->addField('id_i');
+        $query->setOptions(
+            array(
+                'sort' => array('updated_time_s' => 'desc'),
+                )
+        );
+
+        $filter_tags = '';
+        if(isset($filter['tags'])) {
+            $tags = $this->getTagsByNames(explode(',', $filter['tags']));
+            foreach($tags as $tag) {
+                $filter_tags .= " OR tags_t:{$tag}";
+            }
+            if($filter_tags != '') {
+                $filter_tags = "AND (".trim($filter_tags, " OR").")";
+            }
+        }
+        unset($filter['tags']);
+      
+        foreach($filter as $key => $value) {
+            $query->addSearchTerm($key, $value);
+        }
+        
+        $condiciones = $query->getQuery();
+        $query->setCustomQuery("({$condiciones}) {$filter_tags} AND document_name_s:conversation ");
+        
+        $data = $this->solr->getClient()->select($query)->getData();
+        
+        $conversation_ids = array();
+        foreach($data['response']['docs'] as $doc) {
+            $conversation_ids[] = $doc['id_i'];
+        }
+        
+        
+        return $this->em->getRepository('CMModelBundle:Conversation')->findBy(array('id' => $conversation_ids), array('updated_time' => 'DESC'));
+
+	}
+	
+    public function sendPMMessage($id, $message) {
+        $conversation = $this->getConversationById($id);
+        $fb_conversation_id = $conversation->getConversationId();
+
+        if($this->fb_service->sendMessage($fb_conversation_id, $message)) {
+            //exec('nohup php '.getcwd().'/../app/console cm-api:pm '.$conversation->getFanPage()->getFbId().' >> '.getcwd().'/../app/logs/mensajes-enviados &');
+            $command = new CMConversationMessageCommand();
+            $command->setContainer($this->container);
+            
+            $input = new ArrayInput(array('conversationId' => $conversation->getId()));
+            $output = new NullOutput();
+            $resultCode = $command->run($input, $output);
+	
+            return true;
+        }
+         return false;
+    }
+
+    public function deleteCommentInFacebook($comentario) {
+    	$fb_comentario_id = $comentario->getFacebookID();
+    	$this->fb_service->deleteComment($fb_comentario_id);
+    	 
+    }
+    
+    public function qualify(CalificableInterface $calificable, $calificacion) {
+        $calificable->qualify($calificacion);
+        $this->em->flush();
+
+        return true;
+    }
+
+    public function getTagsByName($name){
+        return $this->em->getRepository('CMModelBundle:Tag')->getByName($name);
+    }
+
+    public function getTagsByNames($names){
+        return $this->em->getRepository('CMModelBundle:Tag')->getByNames($names);
+    }
+
+    public function getTagsByConversation($conversation_id) {
+        return $this->em->getRepository('CMModelBundle:Tag')->getByConversation($conversation_id);
+    }
+    
+    public function getTagsByPost($post_id) {
+    	return $this->em->getRepository('CMModelBundle:Tag')->getByPost($post_id);
+    }
+
+    public function updateTags(TaggeableInterface $taggeableEntity, $tag_name, $remove = false) {
+        $tag = $this->em->getRepository('CMModelBundle:Tag')->findOneByName($tag_name);
+        if(!$tag) {
+            $tag = new Tag();
+            $tag->setName($tag_name);
+            $this->em->persist($tag);
+            $this->em->flush();
+        }
+        $taggeableEntity->tag($tag, $remove);
+        $this->em->flush();
+    }
+
+	public function insertTags(TaggeableInterface $taggeableEntity, $tags) {
+		$this->em->getRepository ( 'CMModelBundle:Tag' )->insertTags ( $taggeableEntity, $tags );
+	}
+	public function getPostById($id) {
+		return $this->em->getRepository ( 'CMModelBundle:Post' )->find ( $id );
+	}
+
+	public function getComments() {
+		return $this->em->getRepository ( 'CMModelBundle:Comment' )->findAll ();
+	}
+	public function getCommentById($id) {
+		return $this->em->getRepository ( 'CMModelBundle:Comment' )->find ( $id );
+	}
+	public function getPostsByFanPage($fanpage_id, $updated_time , $limit) {
+		$fanPage = $this->getFanPageById ( $fanpage_id );
+		return $this->em->getRepository ( 'CMModelBundle:Post' )->findByFanPage ( $fanPage, $updated_time , $limit);
+	}
+
+	public function  getComentariosPaginadosByPost( $postId, $created_time, $cantidad) {
+		$post = $this->getPostById($postId);
+		return $this->em->getRepository('CMModelBundle:Comment')->getComentariosPaginadosByPost($post,$cantidad);
+	}
+	
+	public function  getComentariosPaginadosAnterioresByPost( $postId, $created_time, $cantidad) {
+		$post = $this->getPostById($postId);
+		return $this->em->getRepository('CMModelBundle:Comment')->getComentariosPaginadosAnterioresByPost($post,$created_time,$cantidad);
+	}
+	public function  getComentariosPaginadosPosterioresByPost( $postId, $created_time, $cantidad) {
+		$post = $this->getPostById($postId);
+		return $this->em->getRepository('CMModelBundle:Comment')->getComentariosPaginadosPosterioresByPost($post,$created_time,$cantidad);
+	}
+	public function getPosts($updated_time, $limit) {
+		return $this->em->getRepository ( 'CMModelBundle:Post' )->findPosts ( $updated_time , $limit);
+	}
+	
+	public function getCommentsPaginedWithFilters($filters,$start = 0, $limit = 20) {
+		// Solr
+		$query = $this->solr->createQuery('CMModelBundle:Post');
+		$query->setUseAndOperator(false);
+		$query->setUseWildcard(false);
+		$query->setOmitHeader(false);
+		$query->setHydrationMode(HydrationModes::HYDRATE_INDEX);
+		$query->addField('id_i');
+		$query->setRows(200); //TODO CORREGIR ESTO
+		$query->setOptions(
+				array(
+						'sort' => array('updated_time_s' => 'desc'),
+				)
+		);
+		
+		$fan_page_id = $filters['fanPage'];
+//		$query->addSearchTerm("document_name_s","conversation");
+		foreach($filters as $key => $value) {
+			$query->addSearchTerm($key, $value);
+		}
+		
+		//ESTO ES PORQUE  EL FAN PAGE SE CARGA DISTINTO POR EL NOMBRE DEL ATRIBUTO
+		$orQuery = $query->getQuery();
+		if  ($fan_page_id != "0") //SI NO SELECCIONO "TODAS" LAS FANPAGE FILTRA UNA
+			$query->setCustomQuery("({$orQuery}) AND fan_page_i:{$fan_page_id} AND document_name_s:post");
+		else // SELECCIONO "TODAS" NO FILTRA
+			$query->setCustomQuery("({$orQuery}) AND document_name_s:post");
+		
+		$data = $this->solr->getClient()->select($query)->getData();
+		$posts = array();
+
+		foreach($data['response']['docs'] as $doc) {
+			$posts['post'][] = $doc['id_i'];
+		}
+
+		
+		if (isset($filters['qualification']) && $filters['qualification'] != 5) {
+			if ($filters['qualification'] == 3) {
+				$posts['calificacion'][] = 3;
+				$posts['calificacion'][] = 4;
+			} 
+				
+			else
+				$posts['calificacion']= $filters['qualification'];
+		}
+		else if (isset($filters['qualification']) && $filters['qualification'] == 5) {
+			for ( $i = '0'; $i <= '3'; $i++) {
+				$posts['calificacion'][] = $i;
+			}
+		}
+		
+		return $this->em->getRepository('CMModelBundle:Comment')->findBy($posts, array( 'fecha_de_creacion' => 'DESC'), $limit, $start);
+		
+	}
+	
+	public function getFanpagesLikesByFecha($desde = null, $hasta = null) {
+		return $this->em->getRepository('CMModelBundle:FanpageLike')->getFanpageLikeByFecha($desde,$hasta);
+	}
+	
+	public function getCantidadDeCalificacionesDeCommentariosAgrupadas($desde = null, $hasta = null) {
+		return $this->em->getRepository('CMModelBundle:Comment')->getCantidadDeCalificacionesAgrupadas($desde,$hasta);
+	}
+	
+	public function getCantidadDeLikesDePosts($desde,$hasta) {
+		return $this->em->getRepository('CMModelBundle:Post')->getCantidadLikes($desde,$hasta);
+	}
+	public function getCantidadDeSharesDePosts($desde,$hasta) {
+		return $this->em->getRepository('CMModelBundle:Post')->getCantidadShares($desde,$hasta);
+	}
+	
+	
+	public function getAudiencia($fanpages,$canalDeInteraccion,$calificaciones,$texto,$tags,$desde,$hasta) {
+		// Solr
+		$query = $this->solr->createQuery('CMModelBundle:Post'); //esto solo es para crear $query pero no filtra por post
+		$query->setUseAndOperator(true);
+		$query->setUseWildcard(false);
+		$query->setOmitHeader(false);
+		$query->setHydrationMode(HydrationModes::HYDRATE_INDEX);
+		$query->setRows(10000); //TODO ver como sacar limite
+		$query->addField('id_i');
+		$query->addField('document_name_s');
+
+		$condicionFanPage = $this->agregarCondicionSolrDelArray($fanpages,'fan_page_i');
+		$condicionCanalDeInteraccion = $this->agregarCondicionSolrDelArray($canalDeInteraccion,'document_name_s');
+		$condicionFecha = $this->agregarCondicionSolrFecha($canalDeInteraccion,$desde,$hasta);
+		$condicionTexto = $this->armarCondicionSolrPorTexto($texto);
+		$condicionTags = $this->armarCondicionSolrDeTags($tags);
+		
+		$condicion = $this->armarCondicion($condicionFanPage,$condicionCanalDeInteraccion,$condicionTexto,$condicionTags,$condicionFecha);
+		
+		$query->setCustomQuery("({$condicion})");
+	
+		$data = $this->solr->getClient()->select($query)->getData();
+		$posts= '';
+		$conversations= '';
+	
+		$primerPost = true;
+		$primerConv = true;
+		foreach($data['response']['docs'] as $doc) {
+			if ($doc['document_name_s'] == 'post') {
+				if ($primerPost) {
+					$posts = $doc['id_i'];
+					$primerPost = false;
+				}
+				else {
+					$posts .= ', '.$doc['id_i'];
+				}
+			}
+			else {
+				if ($primerConv) {
+					$conversations = $doc['id_i'];
+					$primerConv = false;
+				}
+				else {
+					$conversations .= ', '.$doc['id_i'];
+				}
+				
+			}
+		}
+		
+		
+		$fbids1 = $this->em->getRepository('CMModelBundle:Comment')->getFBIdsPeople($posts,$calificaciones);
+		$fbids2 = $this->em->getRepository('CMModelBundle:Conversation')->getFBIdsPeople($conversations,$calificaciones);
+		
+		$fbids = array();
+		$fbids = array_merge($fbids1,$fbids2);
+		
+		
+		
+		$idsPostArray = explode(',',$posts);
+		$postObj = $this->em->getRepository('CMModelBundle:Post')->findById($idsPostArray);
+		
+		 
+		if ($calificaciones == null || in_array('2',$calificaciones)) { //si busca positivos
+			
+			$idsArray = $this->em->getRepository('CMModelBundle:Post')->getFBIdsPeopleWhoShareOrLikePost($posts);
+			
+			foreach ($idsArray as $ids) {
+				$array = explode(',',$ids['shared']);
+				foreach ($array as $id) {
+					$fbids[] = array( 'persona_facebook_id' => $id);	
+				}
+				
+				$array = explode(',',$ids['likes']);
+				foreach ($array as $id) {
+					$fbids[] = array( 'persona_facebook_id' => $id);
+				}
+				
+			}
+			
+		}
+		
+		return $fbids;
+		
+	}
+	
+	
+	private function agregarCondicionSolrDelArray($array,$campo) {
+		$primera = true;
+		$condicion = '';
+		if ($array != null) {
+		foreach ($array as $elemento) {
+			if ($primera) {
+				$condicion = "(".$campo.":".$elemento;
+				$primera = false;
+			}
+			else {
+				$condicion .= " OR ".$campo.":".$elemento;
+			}
+		}
+		$condicion = !$primera ? $condicion.')' : '';
+		}
+		return $condicion;
+	}
+	
+	private function armarCondicionSolrPorTexto($texto) {
+
+		$condicion = '';
+		if($texto != '') {
+			$texto = "\"".$texto."\"";
+			
+			$condicion = "(";
+			$condicion .= "messages_t:".$texto;
+			$condicion .= " OR message_t:".$texto;
+			$condicion .= " OR type_t:".$texto;
+			$condicion .= " OR caption_t:".$texto;
+			$condicion .= " OR description_t:".$texto;
+			$condicion .= " OR link_t:".$texto;
+			$condicion .= " OR story_t:".$texto;
+			$condicion .= " OR nameExtra_t:".$texto;
+			$condicion .= ")";
+
+		}
+		
+		return $condicion;
+		
+	}
+	
+	private function armarCondicion($condicionFanPage,$condicionCanalDeInteraccion,$condicionTexto,$condicionTags,$condicionFecha) {
+		 $condicion = $condicionCanalDeInteraccion; //este condicion debe estar obligatoriamente cargada
+		 $condicion .= $condicionFanPage != '' ? ' AND '.$condicionFanPage: '';
+		 $condicion .= $condicionTexto != '' ? ' AND '.$condicionTexto : '';
+		 $condicion .= $condicionTags != '' ? ' AND '.$condicionTags: '';
+		 $condicion .= $condicionFecha != '' ? ' AND '.$condicionFecha: '';
+		  
+		 return  $condicion;
+	}
+	
+	private function armarCondicionSolrDeTags($tags) {
+		$arrayTags = $this->getTagsByNames(explode(',', $tags));
+		
+		$condicion = $tags != '' ? 'tags_t:' : '';
+		foreach ($arrayTags as $tag) {
+			$condicion .= $tag.' '; 
+		}
+		return $condicion;
+	}
+	
+	private function agregarCondicionSolrFecha($canales,$desde,$hasta) {
+		$condicion = "(";
+		$primera = true;
+		foreach ($canales as $canal) {
+			switch ($canal) {
+				case "post":
+					 if ($primera) {
+						$condicion .= "fecha_de_creacion_s: [".$desde." TO ".$hasta."]";
+						$primera = false;								
+					}
+					else {
+						$condicion .= " OR fecha_de_creacion_s: [".$desde." TO ".$hasta."]";
+					}
+					 
+					break;
+				case "conversation":
+					if ($primera) {
+						$condicion .= "updated_time_s: [".$desde." TO ".$hasta."]";
+						$primera = false;
+					}
+					else {
+						$condicion .= " OR updated_time_s: [".$desde." TO ".$hasta."]";
+					}
+					breaK;	
+			}
+		}
+		$condicion .= ")";
+		return $condicion;
+		
+	}
+	
+	public function getCommentsByIds($ids) {
+		return $this->em->getRepository('CMModelBundle:Comment')->findBy($ids);
+	}
+
+	public function insertarUsuario($nombre, $apellido, $email, $password, $rolId) {
+		$user = new User();
+		$user->setNombre($nombre);	 
+		$user->setApellido($apellido);
+		$user->setEmail($email);
+		$user->setPassword($password);
+				
+		$user->addRole($this->getRoleById($rolId));
+
+
+		$this->em->persist($user);
+		$this->em->flush();
+		
+		return "Usuario insertado";
+		
+	}
+	public function insertarFanPage($nombre,$access_token,$url,$fbId,$appId,$app_secret) {
+		$fanpage = new FanPage();
+		$fanpage->setName($nombre);
+		$fanpage->setAccessToken($access_token);
+		$fanpage->setUrl($url);
+		$fanpage->setFbId($fbId);
+		$fanpage->setAppId($appId);
+		$fanpage->setAppSecret($app_secret);
+		
+		$this->em->persist($fanpage);
+		$this->em->flush();
+
+		return "ok";
+	}
+	
+	public function eliminarFanPage($fanpage_id) {
+		$fanpage = $this->getFanPageById($fanpage_id);
+		$this->em->remove($fanpage);
+		$this->em->flush();
+	}
+	
+	public function eliminarUsuario($usuario_id) {
+		$usuario = $this->getUserById($usuario_id);
+		$this->em->remove($usuario);
+		$this->em->flush();
+		
+	}
+	
+	public function actualizarFanPage($id,$nombre,$access_token,$url,$fbId,$appId,$app_secret) {
+		$fanpage = $this->getFanPageById($id);
+		$fanpage->setName($nombre);
+		$fanpage->setAccessToken($access_token);
+		$fanpage->setUrl($url);
+		$fanpage->setFbId($fbId);
+		$fanpage->setAppId($appId);
+		$fanpage->setAppSecret($app_secret);
+		$fanpage->setAccesTokenActualizado(true);
+		
+		$this->em->persist($fanpage);
+		$this->em->flush();
+		
+		return "ok";
+	}
+	
+	public function actualizarAppSecretDeLaFanpage($id,$access_token) {
+		$fanpage = $this->getFanPageById($id);
+		$fanpage->setAccessToken($access_token);
+		$fanpage->setAccesTokenActualizado(true);
+		$this->em->persist($fanpage);
+		$this->em->flush();
+	
+		return "ok";
+	}
+	
+	
+	public function actualizarUser($id, $nombre, $apellido, $email, $rolId, $password) {
+		$user = $this->getUserById($id);
+		
+		$user->setNombre($nombre);
+		$user->setApellido($apellido);
+		$user->setEmail($email);
+		if ($password != null)
+			$user->setPassword($password);
+		
+		$rol = $this->getRoleById($rolId);
+		
+		$user->removeAllRoles(); 
+		$user->addRole($rol);
+	
+	
+		$this->em->persist($user);
+		$this->em->flush();
+	
+		return "ok";
+	
+	}
+	
+	public function actualizarPassword($user, $password) {
+		$user->setPassword($password);
+		$this->em->flush();
+	}
+	
+	public function getAccessTokenDeLaPaginaDeLaConversacion($fb_id) {
+		$conversation = $this->em->getRepository('CMModelBundle:Conversation')->findOneBy( array (
+																							"conversation_id" => $fb_id,
+																							)
+																					);
+		return $conversation->getFanPage()->getAccessToken();
+	}
+	
+	public function getAccessTokenDeLaPaginaDelComment($fb_id) {
+		$comment = $this->em->getRepository('CMModelBundle:Comment')->findOneBy( array (
+				"facebookID" => $fb_id,
+		)
+		);
+		return $comment->getPost()->getFanPage()->getAccessToken();
+	}
+		
+	public function destacarComentario($comentarioId,$valor) {
+		$comentario = $this->em->getRepository('CMModelBundle:Comment')->findOneById($comentarioId);
+		if ($valor == "true")
+			$comentario->setDestacado(1);
+		else
+			$comentario->setDestacado(0);
+		$this->em->flush();	
+		return $comentario;
+	}
+}

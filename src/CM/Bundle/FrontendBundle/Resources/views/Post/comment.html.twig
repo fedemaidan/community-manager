@@ -1,0 +1,27 @@
+{% if comentario.calificacion == 0 %} 
+ 	{% set calificacion = 'white' %}
+{% elseif comentario.calificacion == 1 %} 
+	{% set calificacion = 'blue'%} 
+{% elseif comentario.calificacion == 2 %} 
+	{% set calificacion = 'green' %} 
+{% elseif comentario.calificacion >= 3 %} 
+	{% set calificacion = 'red' %} 
+{% endif %}
+
+<li href="#" class="comentario list-group-item disabled" data-comentario-id="{{ comentario.id }}" data-calificacion="{{ comentario.calificacion}}" data-created-time="{{ comentario.fechaDeCreacion }}">
+	<div class="panel panel-default">
+		<div class="row panel-heading colorCalificacion-{{ calificacion }}">
+			<div class="imagen col-xs-1"><img class="fb-pic" alt="pic" src="http://graph.facebook.com/{{ comentario.personaFacebookId }}/picture?type=square&height=32" /></div>	
+			<div class="personaFacebook col-xs-3"> {{ comentario.personaNombre }}</div>
+			<div class="created-time col-xs-3 time-comment">{{ comentario.fechaDeCreacion|date("d/m/Y H:i:s") }}</div>
+			<div class="botones">
+				<div class="circle circle-red-unselected {% if comentario.calificacion == 3 %} circle-selected {% endif %}  bton-qualify col-xs-2" data-calificacion=3></div>
+				<div class="circle circle-blue-unselected {% if comentario.calificacion == 1 %} circle-selected {% endif %} bton-qualify col-xs-2" data-calificacion=1></div>
+				<div class="circle circle-green-unselected {% if comentario.calificacion == 2 %} circle-selected {% endif %} bton-qualify col-xs-2" data-calificacion=2></div>
+			</div>
+		</div>
+		<div class="panel-body">
+			<div class="comentarioContenido">{{ comentario.comentario }}</div>
+		</div>
+	</div>
+</li>

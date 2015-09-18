@@ -1,0 +1,344 @@
+<?php
+
+namespace CM\Bundle\ModelBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * Comment
+ * 
+ * @ORM\Table(name="comment")
+ * @ORM\Entity(repositoryClass="CM\Bundle\ModelBundle\Entity\CommentRepository")
+ * 
+ */
+
+
+class Comment implements CalificableInterface {
+	
+	
+       /**
+        * @var integer
+        * 
+        * @ORM\Column(name="id", type="integer")
+        * @ORM\Id
+        * @ORM\GeneratedValue(strategy="AUTO")
+        */
+       private $id;
+       
+       /**
+        * @var integer
+        *
+        * @ORM\Column(name="persona_nombre", type="string", length=50)
+        */
+       
+       private $personaNombre;
+        
+       /**
+        * @var string
+        * 
+        * @ORM\Column(name="facebook_id" , type="string", length=50)
+        */
+       
+       private $facebookID;
+
+
+       /**
+        * @var bool
+        * 
+        * @ORM\Column(name="destacado" , type="boolean")
+        */
+       
+       private $destacado;
+
+
+
+       
+       /**
+        * @var string
+        *
+        * @ORM\Column(name="persona_facebook_id" , type="string", length=50)
+        */
+        
+       private $personaFacebookId;
+       
+       
+       /**
+        * @var integer
+        * 
+        * @ORM\Column(name="calificacion", type="integer")
+        * 
+        */
+       
+       private $calificacion;
+       
+       /**
+        * @var string
+        *
+        * @ORM\Column(name="comentario" , type="string", length=900)
+        */
+       private $comentario;
+       
+       
+       /**
+        *
+        * @var string
+        *
+        * @ORM\Column(name="fechaDeCreacion", type="string")
+        *
+        */
+       
+       
+       private $fecha_de_creacion;
+       /**
+        *
+        * @var string
+        *
+        * @ORM\Column(name="fechaDeBloqueo", type="string", nullable=true)
+        *
+        */
+       
+       private $fecha_de_bloqueo;
+       
+       /**
+        *
+        * @var integer
+        * @ORM\ManyToOne(targetEntity="Post")
+        * 
+        */
+       
+       private $post;
+
+    /**
+     * Set id
+     *
+     * @param integer $id
+     * @return Comment
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set facebookID
+     *
+     * @param string $facebookID
+     * @return Comment
+     */
+    public function setFacebookID($facebookID)
+    {
+        $this->facebookID = $facebookID;
+
+        return $this;
+    }
+
+    /**
+     * Get facebookID
+     *
+     * @return string 
+     */
+    public function getFacebookID()
+    {
+        return $this->facebookID;
+    }
+    
+    
+    /**
+     * Set setPersonaFacebookId
+     *
+     * @param string $personaFacebookId
+     * @return Comment
+     */
+    public function setPersonaFacebookId($personaFacebookId)
+    {
+    	$this->personaFacebookId = $personaFacebookId;
+    
+    	return $this;
+    }
+    
+    /**
+     * Get personaFacebookId
+     *
+     * @return string
+     */
+    public function getPersonaFacebookId()
+    {
+    	return $this->personaFacebookId ;
+    }
+    
+    
+
+    /**
+     * Set calificacion
+     *
+     * @param integer $calificacion
+     * @return Comment
+     */
+    public function setCalificacion($calificacion)
+    {
+        $this->calificacion = $calificacion;
+
+        return $this;
+    }
+
+    /**
+     * Get calificacion
+     *
+     * @return integer 
+     */
+    public function getCalificacion()
+    {
+        return $this->calificacion;
+    }
+
+    /**
+     * Set fecha_de_creacion
+     *
+     * @param \String $fechaDeCreacion
+     * @return Comment
+     */
+    public function setFechaDeCreacion($fechaDeCreacion)
+    {
+        $this->fecha_de_creacion = $fechaDeCreacion;
+
+        return $this;
+    }
+
+    /**
+     * Get fecha_de_creacion
+     *
+     * @return string
+     */
+    public function getFechaDeCreacion()
+    {
+        return $this->fecha_de_creacion;
+    }
+
+    /**
+     * Set fecha_de_bloqueo
+     *
+     * @return Comment
+     */
+    public function setFechaDeBloqueo($fechaDeBloqueo)
+    {
+        $this->fecha_de_bloqueo = $fechaDeBloqueo;
+
+        return $this;
+    }
+
+    /**
+     * Get fecha_de_bloqueo
+     * 
+     */
+    public function getFechaDeBloqueo()
+    {
+        return $this->fecha_de_bloqueo;
+    }
+
+    /**
+     * Set post
+     *
+     * @param \CM\Bundle\ModelBundle\Entity\Post $post
+     * @return Comment
+     */
+    public function setPost(\CM\Bundle\ModelBundle\Entity\Post $post = null)
+    {
+        $this->post = $post;
+
+        return $this;
+    }
+
+    /**
+     * Get post
+     *
+     * @return \CM\Bundle\ModelBundle\Entity\Post 
+     */
+    public function getPost()
+    {
+        return $this->post;
+    }
+
+    /**
+     * Set comentario
+     *
+     * @param string $comentario
+     * @return Comment
+     */
+    public function setComentario($comentario)
+    {
+        $this->comentario = $comentario;
+
+        return $this;
+    }
+
+    /**
+     * Get comentario
+     *
+     * @return string 
+     */
+    public function getComentario()
+    {
+        return $this->comentario;
+    }
+    
+    public function qualify($calificacion) {
+       return $this->setCalificacion($calificacion);
+    }
+
+    /**
+     * Set personaNombre
+     *
+     * @param string $personaNombre
+     * @return Comment
+     */
+    public function setPersonaNombre($personaNombre)
+    {
+        $this->personaNombre = $personaNombre;
+
+        return $this;
+    }
+
+    /**
+     * Get personaNombre
+     *
+     * @return string 
+     */
+    public function getPersonaNombre()
+    {
+        return $this->personaNombre;
+    }
+
+    /**
+     * Get destacado
+     *
+     * @return int
+     */
+    public function getDestacado()
+    {
+        return $this->destacado;
+    }
+
+    /**
+     * Set destacado
+     *
+     * @param int $destacado
+     * @return Comment
+     */
+    public function setDestacado($destacado)
+    {
+        $this->destacado = $destacado;
+
+        return $this;
+    }
+}

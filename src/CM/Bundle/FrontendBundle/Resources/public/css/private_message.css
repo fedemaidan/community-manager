@@ -1,0 +1,131 @@
+.cm-row {
+	height: 80vh;
+	margin: 0;
+}
+
+.cm-row [class^=col-] {
+	padding: 0;
+}
+
+.cm-row .col-messages-container {
+	height: 100%;
+	border-right: 1px solid #D5D5D5;
+}
+
+.cm-row .conversations-scroll {
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 100%;
+}
+
+.cm-row .messages-title {
+	height: 45px;
+	padding: 15px;
+	color: gray;
+	font-weight: bold;
+}
+
+.cm-row [class^=col-scroll] {
+	overflow-y: auto;
+	overflow-x: hidden;
+	position: absolute;
+	top: 45px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.cm-row .list-group {
+	margin: 0 !important;
+	vertical-align: middle;
+}
+
+.cm-row .list-group-item {
+	border: 0 !important;
+	border-bottom: 1px solid #dddddd !important;
+	border-radius: 0 !important;
+	padding: 0 !important;
+}
+
+.cm-row .list-group-item:not(:last-child){
+	border-bottom: 2px solid #DDD !important;
+}
+
+.cm-row .list-group-item .panel {
+	margin: 0 !important;
+	border-radius: 0 !important;
+}
+
+.cm-row .container-vote {
+	margin-top: 15px;
+	padding-top: 5px;
+	border-top: 1px solid #ddd;
+}
+
+.cm-row .container-vote [class^=col-] {
+	cursor: pointer;
+	flex: 1 1 100%;
+	font-weight: bold;
+}
+
+.cm-row .messages {
+	display: none;
+}
+
+.cm-row a.conversation.active {
+	color: inherit !important;
+}
+
+.cm-row a.conversation.active .panel-mensaje {
+	background-color: #D5D5D5;
+}
+
+.panel-mensaje-color1 {
+	
+}
+
+.panel-mensaje-color2 {
+	
+}
+.cm-row .conversations-container {
+	position: relative;
+	padding-bottom: 35px;
+}
+
+.fb-pic {
+	padding: 5px;
+}
+
+.panel-post {
+	display: none;
+	margin: 20px auto;
+	width: 95%;
+	
+	/* position:absolute;
+	bottom: 10px; */
+}
+
+.panel-post textarea {
+	width: 100%;
+	margin-bottom: 5px;
+}
+
+.typeahead {
+	margin: 5px auto;
+	width: 95%;
+}
+
+.btn-more {
+	position: absolute;
+	bottom: 0;
+}
+
+.created-time {
+	right:  15px;	
+}
+
+.tags {
+	position: absolute;
+	right: 10px;
+	top: 15%;
+}

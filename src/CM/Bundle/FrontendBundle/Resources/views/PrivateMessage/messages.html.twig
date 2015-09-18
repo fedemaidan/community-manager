@@ -1,0 +1,57 @@
+{# {% for key, messages in conversation_messages %}#}
+{# 	<table class="messages list-group" data-conversation-id="{{key}}">#}
+{# 		{% for message in messages %}#}
+{# 			<tr href="#" class="list-group-item disabled">#}
+{# 				<td>#}
+{# 					<img class="fb-pic" src="http://graph.facebook.com/{{message.from.id}}/picture?type=square&height=32"/>#}
+{# 				</td>#}
+{# 				<td>#}
+{# 					{{ message.from.name }}#}
+{# 				</td>#}
+{# 				<td>#}
+{# 					{{ message.created_time|date("d/m/Y H:i:s") }}#}
+{# 				</td>#}
+{# 				<td>#}
+{# 					{{ message.message }}#}
+{# 				</td>#}
+{# 			</tr>#}
+{# 		{% endfor %}#}
+{# 	</table>#}
+{# {% endfor %}#}
+
+
+{% for key, messages in conversation_messages %}
+	<ul class="messages list-group" data-conversation-id="{{key}}">
+		{% for message in messages %}
+			<li href="#" class="list-group-item disabled">
+				<div class="panel panel-default">
+					<div class="panel-heading"><img class="fb-pic" src="http://graph.facebook.com/{{message.from.id}}/picture?type=square&height=32"/>{{ <a class="personaFacebookLink" href=" https://www.facebook.com/{{message.from.id}} ">{{ message.from.name }}<a> <div class="created-time">{{ message.created_time|date("d/m/Y H:i:s") }}</div></div>
+					<div class="panel-body">
+						<div class="message">
+							{{ message.message }}
+							 
+							{%   if message.attachments.data[0] is defined %} 
+								{% for attach in message.attachments.data %}
+								{% if attach.image_data.url is defined %}	
+ 								<img alt="{{ attach.image_data.url }}" src="{{ attach.image_data.url }}" width="200" height="200"/>
+								{% endif  %}
+								{% endfor %}
+								
+								
+							{% endif %}
+							{%   if message.shares.data[0] is defined %} 
+							{% for share in message.shares.data %}
+								{% if share.link is defined %}	
+ 									<a href="{{ share.link  }}">{{ share.link  }}</a>
+								{% endif  %}
+								{% endfor %}
+								
+								
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</li>
+		{% endfor %}
+	</ul>
+{% endfor %}

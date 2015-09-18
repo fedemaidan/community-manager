@@ -1,0 +1,41 @@
+{% extends '::base.html.twig' %}
+
+{% block title  %} Fanpage{% endblock %}
+{% set panel_type = "Fanpages" %}
+{% block stylesheets %}
+	{% stylesheets '@CMFrontendBundle/Resources/public/css/abm.css' %}
+		<link rel="stylesheet" href="{{ asset_url }}">
+	{% endstylesheets %}
+{% endblock %}
+
+{% set panel_title = "Cuenta facebook" %}
+
+{% block panelbody %}
+
+
+<!--
+  Below we include the Login Button social plugin. This button uses
+  the JavaScript SDK to present a graphical Login button that triggers
+  the FB.login() function when clicked.
+-->
+
+<fb:login-button data-scope="read_page_mailboxes,read_mailbox,read_stream" onlogin="checkLoginState();">
+</fb:login-button>
+
+<div id="status">
+</div>
+
+</body>
+</html>
+
+
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts '@CMFrontendBundle/Resources/public/js/abmfanpage.js' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+    {% javascripts '@jquery_ui' %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}

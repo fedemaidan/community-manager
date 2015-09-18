@@ -1,0 +1,608 @@
+$(document).ready(function() {
+	$(document).ajaxStart(function() {
+        $.get('session/check', {}, function(data){
+			if(data !== 'true') {
+				window.location.replace('/');
+			}
+		});
+    });
+    /*$(document).ajaxStop(function() {
+        $('div.loading').hide();
+    });*/
+	confBehaviors();
+	init();
+	init2();
+});
+
+function init2() {
+	$('a.conversation:first').addClass('active');
+	autocompleteSearchTags();
+}
+
+function confBehaviors() {
+
+	$('#messages-modal').on('shown.bs.modal', function (e) {
+		$(".col-scroll").animate({ scrollTop: $('.col-scroll')[0].scrollHeight}, 250);
+	});
+
+	initTagit();
+
+	$(document).keydown(function(event){
+
+		
+		if (event.keyCode == 40 && event.ctrlKey) {//Negativo
+			event.preventDefault();
+			$("a.conversation.active").find('.btn-qualify[data-calificacion=3]').click();
+			if ($('#messages-modal').hasClass('in')) {
+				colorearCalificacionEnPopUp(3);
+				moveToNextConversation(true);
+			}
+			else {
+				moveToNextConversation(false);
+			}
+		}
+
+		if (event.keyCode == 38 && event.ctrlKey) {//Positivo
+			event.preventDefault();
+			$("a.conversation.active").find('.btn-qualify[data-calificacion=2]').click();
+			if ($('#messages-modal').hasClass('in')) {
+				colorearCalificacionEnPopUp(2);
+				moveToNextConversation(true);
+			}
+			else {
+				moveToNextConversation(false);
+			}
+		}
+
+		if ((event.keyCode == 37 || event.keyCode == 39) && event.ctrlKey) {//Neutro
+			event.preventDefault();
+			$("a.conversation.active").find('.btn-qualify[data-calificacion=1]').click();
+			if ($('#messages-modal').hasClass('in')) {
+				colorearCalificacionEnPopUp(1);
+				moveToNextConversation(true);
+			}
+			else {
+				moveToNextConversation(false);
+			}
+		}
+	});
+
+	$(document).on('click','a.conversation', {} ,function(e){
+
+		var conversation_id = $(this).data('conversationId');
+		var calificacion = $(this).data('calificacion');
+
+		
+		//colorear titulo de mensajes
+		$('#messages-modal').modal('show');
+		var tituloMensajes = $('#messages-modal').find('.messages-title');
+		$(tituloMensajes).removeClass('colorCalificacion-red');
+		$(tituloMensajes).removeClass('colorCalificacion-blue');
+		$(tituloMensajes).removeClass('colorCalificacion-green');
+		var botonSeleccionado = $(tituloMensajes).find('.circle-selected');
+		$(botonSeleccionado).removeClass('circle-selected');
+		
+		if (calificacion == 1) {
+			$(tituloMensajes).addClass('colorCalificacion-blue');
+			$(tituloMensajes).find('.circle-blue-unselected').addClass('circle-selected');
+		}
+		else if (calificacion == 2) {
+			$(tituloMensajes).addClass('colorCalificacion-green');
+			$(tituloMensajes).find('.circle-green-unselected').addClass('circle-selected');
+		}
+		else if (calificacion == 3){
+			$(tituloMensajes).addClass('colorCalificacion-red');
+			$(tituloMensajes).find('.circle-red-unselected').addClass('circle-selected');
+		}
+				
+		$(".panel-post").hide();
+		$(".messages").hide();
+		$("a.conversation.active").removeClass('active');
+		//$("#tags").tagit("removeAll");
+		$("#tags").find(".tagit-choice").remove();
+		
+		$(this).addClass('active');
+		$(".panel-post").show();
+		$(".panel-post textarea").focus();
+
+		$(".messages[data-conversation-id='"+conversation_id+"']").toggle();
+		$.get('PM/getConversationTags', {conversation_id: conversation_id}, function(data){
+			$.each(data, function(k,v){
+				$("#tags").tagit('createTag', v, null, true);
+			});
+		});
+
+		$(".col-bordered").animate({ scrollTop: $('.col-bordered')[0].scrollHeight}, 250);
+	});
+
+
+	$(document).on('keydown', '.panel-post textarea', {}, function(event){
+		if (event.keyCode == 13 && event.ctrlKey) {
+			event.preventDefault();
+			$('.btn-message').click();
+			moveToNextConversation(true);
+		}
+	});
+
+	$('.btn-tag').popover();
+	
+//	$('.btn-tag').on('show.bs.popover', function (e) {
+//		  // do something…
+//		});
+//	
+	$(document).on('click','.btn-tag', {} ,function(e){
+		e.stopPropagation();
+		
+		var conversation_id = $(this).data('conversationId');
+		var elemento = $(document).find('#tags-'+conversation_id+':first');
+		
+		var arrowSelection = false;
+		
+		$(elemento).tagit({
+				minLength: 3,
+				allowSpaces: true,
+				singleFieldNode: $(".tags-input"),
+				beforeTagAdded: function(event, ui) {
+			        if(ui.tagLabel.length < 3) {
+			        	return false;
+			        }
+			    },
+			    afterTagAdded: function(event, ui) {
+			    	if(!ui.duringInitialization) {
+			        	updateTags(ui.tagLabel, 0, conversation_id);
+			    	}
+			    },
+			    afterTagRemoved: function(event, ui) {
+			    	if(!ui.duringInitialization) {
+				        updateTags(ui.tagLabel, 1, conversation_id);
+				    }
+			    },
+				autocomplete: {
+					delay: 300, 
+					minLength: 3,
+					focus: function(event, ui) {
+						arrowSelection = true;
+						this.value = ui.item.value;
+						event.preventDefault();
+						return false;
+			        },
+					source: function( request, response ) {
+						$.getJSON( "PM/retrieveTags", {
+							term: request.term
+						}, response );
+			      	},
+			      	search: function( event, ui ) {
+			      		if(arrowSelection) {
+			      			arrowSelection = false;
+			      			return false; 
+			      		}
+			      	},
+			      	messages: {
+				        noResults: '',
+				        results: function() {}
+				    }
+				}
+			});
+		
+		
+		$.get('PM/getConversationTags', {conversation_id: conversation_id}, function(data){
+			$.each(data, function(k,v){
+				$(elemento).tagit('createTag', v, null, true);
+			});
+		});
+
+		
+	});
+	
+	$(document).on('click','.btn-qualify', {} ,function(e){
+		e.stopPropagation();
+		var _this = this;
+		var conversation_id = $(this).parents('a.conversation').data('conversationId');
+		var calificacion = $(this).data('calificacion');
+
+		$.post('PM/qualify',
+                {conversation_id: conversation_id,
+                 calificacion: calificacion},
+                function(data) {
+                    if(data) {
+                    	var conversation = $(_this).parents('a.conversation');
+                    	if (calificacion == $(conversation).data("calificacion"))
+                    		calificacion = 0;
+                    	
+                    	$(conversation).data("calificacion",calificacion);
+                    	var panelMensaje = $(conversation).find('.panel-mensaje');
+                    	$(panelMensaje).removeClass('colorCalificacion-blue');
+                    	$(panelMensaje).removeClass('colorCalificacion-green');
+                    	$(panelMensaje).removeClass('colorCalificacion-red');
+                    	$(panelMensaje).removeClass('colorCalificacion-white');
+                    	
+                    	var seleccionado = $(conversation).find('.circle-selected');
+                    	$(seleccionado).removeClass('circle-selected');
+                    	
+                    	if( calificacion == 1) {
+                        	//color fondo panelMensaje
+                        	$(panelMensaje).addClass('colorCalificacion-blue');
+                        	//agrego estilo boton seleccionado
+                        	$(_this).addClass('circle-selected');
+                        	
+                        }
+                        else if (calificacion == 2) {
+                        	//color fondo panelMensaje
+                        	$(panelMensaje).addClass('colorCalificacion-green');
+                        	//agrego estilo boton seleccionado
+                        	$(_this).addClass('circle-selected');
+
+                        }
+                        else if (calificacion == 3) {
+                        	//color fondo panelMensaje
+                        	$(panelMensaje).addClass('colorCalificacion-red');
+                        	//agrego estilo boton seleccionado
+                        	$(_this).addClass('circle-selected');
+                        }
+                        else if (calificacion == 0) {
+                        	//color fondo panelMensaje
+                        	$(panelMensaje).addClass('colorCalificacion-white');
+                        	
+                        	
+                        }
+                    	
+                    } else {
+
+                    }
+                    
+                    //moveToNextConversation();
+                    moverScrollALaConversacionACalificar();
+                   	
+                    
+                });
+	});
+
+	$(document).on('click','.btn-qualify-popup', {} ,function(e){
+		e.stopPropagation();
+		var _this = this;
+		var conversation_id = $(document).find("a.conversation.active").data('conversationId');
+		var calificacion = $(this).data('calificacion');
+
+		$.post('PM/qualify',
+                {conversation_id: conversation_id,
+                 calificacion: calificacion},
+                function(data) {
+                    if(data) {
+                    	// inicializar estado visual de la conversacion
+                    	var conversation = $(document).find("a.conversation.active");
+                    	$(conversation).data("calificacion",calificacion);
+                    	var panelMensaje = $(conversation).find('.panel-mensaje');
+                    	$(panelMensaje).removeClass('colorCalificacion-blue');
+                    	$(panelMensaje).removeClass('colorCalificacion-green');
+                    	$(panelMensaje).removeClass('colorCalificacion-red');
+                    	$(panelMensaje).removeClass('colorCalificacion-white');
+                    	var seleccionado = $(conversation).find('.circle-selected');
+                    	$(seleccionado).removeClass('circle-selected');
+                    	
+                    	// inicializar estado visual de messages titule
+                    	var messageTitle = $(document).find(".messages-title");
+                    	$(messageTitle).removeClass('colorCalificacion-blue');
+                    	$(messageTitle).removeClass('colorCalificacion-green');
+                    	$(messageTitle).removeClass('colorCalificacion-red');
+                    	$(messageTitle).removeClass('colorCalificacion-white');
+                    	seleccionado = $(messageTitle).find('.circle-selected');
+                    	$(seleccionado).removeClass('circle-selected');
+                    	
+                    	
+                    	if( calificacion == 1) {
+                        	//color fondo panelMensaje
+                        	$(panelMensaje).addClass('colorCalificacion-blue');
+                        	$(messageTitle).addClass('colorCalificacion-blue');
+                        	//agrego estilo boton seleccionado
+                        	$(_this).addClass('circle-selected');
+                        	$(conversation).find('.circle-blue-unselected').addClass('circle-selected');
+                        	
+                        }
+                        else if (calificacion == 2) {
+                        	//color fondo panelMensaje
+                        	$(panelMensaje).addClass('colorCalificacion-green');
+                        	$(messageTitle).addClass('colorCalificacion-green');
+                        	//agrego estilo boton seleccionado
+                        	$(_this).addClass('circle-selected');
+                        	$(conversation).find('.circle-green-unselected').addClass('circle-selected');
+
+                        }
+                        else if (calificacion == 3) {
+                        	//color fondo panelMensaje
+                        	$(panelMensaje).addClass('colorCalificacion-red');
+                        	$(messageTitle).addClass('colorCalificacion-red');
+                        	//agrego estilo boton seleccionado
+                        	$(_this).addClass('circle-selected');
+                        	$(conversation).find('.circle-red-unselected').addClass('circle-selected');
+                        }
+                    	
+                    } else {
+
+                    }
+                    
+                    moveToNextConversation(true);
+                    moverScrollALaConversacionACalificar();
+                });
+	});
+
+	$(document).on('click','.btn-message', {} ,function(e){
+		var conversation_id = $("a.conversation.active").data('conversationId');
+		var message = $(this).parents('.panel-post').find('textarea').val();
+		if(message == '') {
+			return false;
+		}
+		$('.btn-message').parents('.panel-post').find('textarea').val('');
+		displayMessage("El mensaje fue enviado.", null);
+
+		
+		reemplazarCodigoConversacionTemporalmente(conversation_id,message);
+		
+		
+		
+		$.ajax({
+			type: "POST",
+			url: "PM/sendMessage",
+			data: {conversation_id: conversation_id, message: message},
+		})
+		
+		
+		.done(function( msg ) {
+			
+			
+			$.ajax({
+				type: "POST",
+				url: "PM/conversations",
+				data: {conversation_id: conversation_id},
+			}).done(function(data){
+				var conversation_id = $(data).data('conversationId');
+				var conversation = $("a.conversation[data-conversation-id='"+conversation_id+"']");
+				if(conversation.length != 0) {
+					var is_active = $(conversation).hasClass('active');
+					$(conversation).replaceWith($(data));
+					if(is_active) {
+						$("a.conversation[data-conversation-id='"+conversation_id+"']").addClass('active');
+					}
+				}
+			});
+        	$.ajax({
+				type: "POST",
+				url: "PM/messages",
+				data: {conversation_id: conversation_id},
+			}).done(function(data){
+				var conversation_id = $(data).data('conversationId');
+				var message_thread = $(".messages[data-conversation-id='"+conversation_id+"']");
+				var is_visible = $(message_thread).is(':visible');
+				if(message_thread.length != 0) {
+					$(message_thread).replaceWith($(data));
+				}
+				if(is_visible) {
+					$(".messages[data-conversation-id='"+conversation_id+"']").show();
+				}
+			});
+
+		});
+
+	});
+
+	$(document).on('click', '.btn-more', {}, function(e){
+		$.ajax({
+				type: "POST",
+				url: "PM/conversations",
+				data: { start: $('a.conversation').length + 2 }, // bug no entendido
+			}).done(function(data){
+				$('.btn-more').before(data);
+				if(data == "") {
+					$('.btn-more').hide();
+				}
+				$('.btn-tag').popover();
+			});
+		$.ajax({
+				type: "POST",
+				url: "PM/messages",
+				data: { start: $('a.conversation').length },
+			}).done(function(data){
+				$('.messages-container').append(data);
+			});
+	});
+
+//	$("input#search-tags").on({
+//	  keydown: function(e) {
+//	    if (e.which === 32)
+//	      return false;
+//	  },
+//	  change: function() {
+//	    this.value = this.value.replace(/\s/g, "");
+//	  }
+//	});
+}
+
+function initTagit() {
+	var arrowSelection = false;
+ 	
+	$("#tags").tagit({
+		minLength: 3,
+		allowSpaces: true,
+		singleFieldNode: $(".tags-input"),
+		beforeTagAdded: function(event, ui) {
+	        if(ui.tagLabel.length < 3) {
+	        	return false;
+	        }
+	    },
+	    afterTagAdded: function(event, ui) {
+	    	if(!ui.duringInitialization) {
+	        	updateTags(ui.tagLabel, 0,null);
+	    	}
+	    },
+	    afterTagRemoved: function(event, ui) {
+	    	if(!ui.duringInitialization) {
+		        updateTags(ui.tagLabel, 1,null);
+		    }
+	    },
+		autocomplete: {
+			delay: 300, 
+			minLength: 3,
+			focus: function(event, ui) {
+				arrowSelection = true;
+				this.value = ui.item.value;
+				event.preventDefault();
+				return false;
+	        },
+			source: function( request, response ) {
+				$.getJSON( "PM/retrieveTags", {
+					term: request.term
+				}, response );
+	      	},
+	      	search: function( event, ui ) {
+	      		if(arrowSelection) {
+	      			arrowSelection = false;
+	      			return false; 
+	      		}
+	      	},
+	      	messages: {
+		        noResults: '',
+		        results: function() {}
+		    }
+		}
+	});
+}
+
+function updateTags(tagName, remove, conversation_id) {
+	if (conversation_id == null)
+		conversation_id = $("a.conversation.active").data('conversationId');
+	
+	$.post('PM/updateTags', {tag_name: tagName, conversation_id: conversation_id, remove: remove}, function(data){
+		displayMessage("Tag guardado.", "tag");
+	});
+}
+
+function displayMessage(msg, section) {
+	if(section == null) {
+		section = 'general';
+	}
+	$("."+section+"-label-response").text(msg);
+	$("."+section+"-label-response").show();
+	setTimeout(function() {
+        $("."+section+"-label-response").hide('fade', {}, 500);
+    }, 2000);
+}
+
+
+
+function moveToNextConversation(abrirPopUp) {
+	var nextConversation = $('a.conversation.active').next();
+	if($(nextConversation).is('.conversation:last')) {
+		$('.btn-more').click();
+	}
+	if (abrirPopUp)
+		$(nextConversation).click();
+	else {
+		$("a.conversation.active").removeClass('active');
+		$(nextConversation).addClass("active");
+	}
+		
+
+	$('.col-left').animate({
+	    scrollTop: $('a.conversation.active').offset().top - $('.col-left').offset().top + $('.col-left').scrollTop()
+	});
+}
+
+
+function colorearCalificacionEnPopUp(calificacion) {
+	
+	// inicializar estado visual de messages titule
+	var messageTitle = $(document).find(".messages-title");
+	$(messageTitle).removeClass('colorCalificacion-blue');
+	$(messageTitle).removeClass('colorCalificacion-green');
+	$(messageTitle).removeClass('colorCalificacion-red');
+	$(messageTitle).removeClass('colorCalificacion-white');
+	var seleccionado = $(messageTitle).find('.circle-selected');
+	$(seleccionado).removeClass('circle-selected');
+	
+	if( calificacion == 1) {
+    	$(messageTitle).addClass('colorCalificacion-blue');
+    	$(messageTitle).find('.circle-blue-unselected').addClass('circle-selected');
+    	
+    }
+    else if (calificacion == 2) {
+    	$(messageTitle).addClass('colorCalificacion-green');
+    	$(messageTitle).find('.circle-green-unselected').addClass('circle-selected');
+
+    }
+    else if (calificacion == 3) {
+    	$(messageTitle).addClass('colorCalificacion-red');
+    	$(messageTitle).find('.circle-red-unselected').addClass('circle-selected');
+    }
+	
+} 
+
+function moverScrollALaConversacionACalificar() {
+	 $(document).find('.conversations-scroll').animate({
+			scrollTop: $('a.conversation.active').offset().top - $('.conversations-scroll').offset().top + $('.conversations-scroll').scrollTop()
+		});
+}
+
+function reemplazarCodigoConversacionTemporalmente(conversacion_id,mensaje) {
+	var conversacion = $("a.conversation[data-conversation-id='"+conversacion_id+"']");
+	var row = $(conversacion).find("row");
+	
+	var fanpageFbId = "55432788477"; //TODO ACTUALIZAR EL FBID
+	var fanpageName = $(conversacion).data('fanpagename');
+	
+	var img = $(row).find("img:first");
+	$(img).replaceWith('<img class="fb-pic" src="http://graph.facebook.com/'+ fanpageFbId +'/picture?type=square&height=32"/>');
+			
+	var titulo = $(row).find('.nombreEnviadoPor:first');
+	$(titulo).replaceWith('<div class="truncate nombreEnviadoPor">'+ fanpageName +'</div>');
+	
+	var snippet = $(row).find(".snippet:first");  
+	$(snippet).replaceWith('<div class="snippet truncate2" title="Enviando ..."> Enviando ...   ' + mensaje + '</div>');
+	
+	var mensajes = $("ul.messages[data-conversation-id='"+conversacion_id+"']");
+	var nuevoMensaje = '<li href="#" class="list-group-item disabled"><div class="panel panel-default"><div class="panel-heading"><img class="fb-pic" src="http://graph.facebook.com/'+fanpageFbId+'/picture?type=square&height=32"/>'+fanpageName+'<div class="created-time">Enviando .. </div></div><div class="panel-body"><div class="message">'+ mensaje +'</div></div></div></li>';
+	$(mensajes).append(nuevoMensaje);
+	
+}
+
+function autocompleteSearchTags() {
+
+	var display;
+	$('#search-tags').typeahead( {
+		 	matcher: function(item) {
+		 		console.log(item);
+		 		return item;
+		 	},
+			updater: function(item) {
+				if (display != "")
+					return display + "," + item;
+				else
+					return item;
+			},
+			source: function( query , process) {
+				
+				var array = query.split(",");
+				var string = array.pop();
+				
+				display = array.toString();
+				if(string.length < 3) {
+					return false;
+				}
+				
+				var datos;
+				$.ajax( { 
+					async: false,
+					type: "post", 
+					url: "PM/retrieveTags",
+					data:{ term: string }
+				
+				}).done(function(data){
+					datos = data;
+				});
+				
+				return process(datos);
+			
+	      	},
+	      	minLength: 3
+		}
+			
+	);
+}

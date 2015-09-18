@@ -1,0 +1,15 @@
+<form class="form-filter col-sm-12" role="form" method="post" action="baja/fanpage">
+                <div class="form-group col-sm-offset-2 col-sm-8">
+                	<label>BORRAR FANPAGE</label>
+                	<hr>
+                 	<label>FANPAGE A BORRAR</label>
+                 	<br>
+                    	<select multiple name="fanpages[]">
+                                {% for fan_page in app.session.get('fan_pages') %}
+                                	<option value="{{fan_page.id}}"  >{{ fan_page.name }}</option>
+                                {% endfor %}
+                        </select>
+                    <br>
+                    <input id="submit" class="boton" type="submit" value="Dar de baja"></input>
+                </div>
+</form>	

@@ -1,0 +1,13 @@
+parameters:
+   # ...
+
+   account.security_listener.class: CM\Bundle\SecurityBundle\Listener\SecurityListener
+
+services:
+   # ...
+
+   account.security_listener:
+        class: %account.security_listener.class%
+        arguments: { cm_service: @cm_service }
+        tags:
+            - { name: kernel.event_listener, event: security.interactive_login, method: onSecurityInteractiveLogin }

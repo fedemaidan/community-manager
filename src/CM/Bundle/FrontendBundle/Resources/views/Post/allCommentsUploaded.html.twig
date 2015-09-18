@@ -1,0 +1,9 @@
+{% for key, comentarios in posts %}
+<ul class="comentarios list-group" data-post-id="{{ key }}">
+{% for comentario in comentarios %}
+      {{ render(controller('CMFrontendBundle:Post:comment',{
+        'comentario' : comentario,
+    })) }}
+{% endfor %}
+</ul>
+{% endfor %}
